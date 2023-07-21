@@ -1,0 +1,707 @@
+概要设计
+　　　
+1、引言
+1.1 文档目的
+本项目建立在cpp-httplib库学习的相关知识体系的基础上，以系统全面的应用所学知识为出发点，设计一个类ftp的文件传输系统，能够实现类似一个 FTP 客户端，可连接到指定的服务端目录，进行交互式的列表、上传、下载。
+本文档从功能需求的角度，详细的描述了项目开发锋功能需求以及功能约束内容，为项目设计团队提供一个详细的功能需求说明文档。
+1.2 文档范围
+本文档描述了项目的功能需求，各个功能设计目标，概要设计目标，概要设计，设计约束及各种人机交互的格式要求。
+1.3 文档对象	
+项目开发人员
+2、项目介绍
+
+2.1项目背景
+1.httplib（XD 项目）
+httplib（https://github.com/yhirose/cpp-httplib）是一个 C++ 实现的 HTTP/HTTPS 服务器/客户端开源项目。
+使用
+httplib 创建自己的 HTTP 服务器，实现：
+1. 通过解析配置文件（使用 JSON 格式）得到监听地址。
+2. 若当前用户为 root，通过配置文件指定运行用户；否则以当前用户运行。
+3. 通 过 配 置 文 件 指 定 URL 、 处 理 器 、 处 理 器 参 数 ， 如 ： {"url": "/data", "handler": "data", "params": {"dir":
+"/var/test/httplib/data"}}。
+4. 使用工厂模式创建对应的处理器。
+5. 实现一个读、写二进制文件内容（Content-Type: application/octet-stream）的处理器，可处理定长（有 Content-Length 头
+部）及变长（使用
+chunked 格式：https://en.wikipedia.org/wiki/Chunked_transfer_encoding）的传输格式，该处理器通
+过 上 述 配 置 的 参 数 将 请 求 对 到 指 定 目 录 中 的 文 件 ， 如
+/data/backup/ubuntu.iso 按 上 述 示 例 目 录 将 对 应 到
+/var/test/httplib/data/backup/ubuntu.iso 。
+6. 支持多会话并发上传、下载，可通过配置文件指定最大并发数。
+7. 可通过配置文件指定 keep-alive 的次数。
+使用
+httplib 创建一个 HTTP 客户端程序用于测试上述 HTTP 服务器的文件并发上传、下载功能，实现：
+1. 可通过命令行参数指定一个本地目录作为测试数据，将该目录中的文件按相同的目录结构上传至服务器，再下载已上
+传成功的文件，校验数据是否正确（在下载的过程中对数据进行校验，不保存为文件）。
+2. 可通过命令行参数指定并发的会话数量，为每个会话创建一个独立线程，当超过服务端最大并发数时，排队进行重试。
+扩展功能：
+1. 小文件合并功能：当客户端上传的文件较小时（如小于 1 MiB），将多个小文件合并保存为一或多个大文件，并通过一
+个
+key-value 数据库保存每个小文件对应的大文件及在该文件中的偏移、大小。
+2. 目录列表功能：当客户端请求的 URL 对应到一个目录时，以自定义的 JSON 格式返回该目录的文件（及子目录）列表，
+包含文件的大小、修改时间等属性。
+3. 交互式客户端：类似一个 FTP 客户端，可连接到指定的服务端目录，进行交互式的列表、上传、下载。
+　　
+2.2项目组成
+httplib 创建自己的 HTTP 服务器，实现：
+1. 通过解析配置文件（使用 JSON 格式）得到监听地址。
+2. 若当前用户为 root，通过配置文件指定运行用户；否则以当前用户运行。
+3. 通 过 配 置 文 件 指 定 URL 、 处 理 器 、 处 理 器 参 数 ， 如 ： {"url": "/data", "handler": "data", "params": {"dir":
+"/var/test/httplib/data"}}。
+4. 使用工厂模式创建对应的处理器。
+5. 实现一个读、写二进制文件内容（Content-Type: application/octet-stream）的处理器，可处理定长（有 Content-Length 头
+部）及变长（使用
+chunked 格式：https://en.wikipedia.org/wiki/Chunked_transfer_encoding）的传输格式，该处理器通
+过 上 述 配 置 的 参 数 将 请 求 对 到 指 定 目 录 中 的 文 件 ， 如
+/data/backup/ubuntu.iso 按 上 述 示 例 目 录 将 对 应 到
+/var/test/httplib/data/backup/ubuntu.iso 。
+6. 支持多会话并发上传、下载，可通过配置文件指定最大并发数。
+7. 可通过配置文件指定 keep-alive 的次数。
+使用
+httplib 创建一个 HTTP 客户端程序用于测试上述 HTTP 服务器的文件并发上传、下载功能，实现：
+1. 可通过命令行参数指定一个本地目录作为测试数据，将该目录中的文件按相同的目录结构上传至服务器，再下载已上
+传成功的文件，校验数据是否正确（在下载的过程中对数据进行校验，不保存为文件）。
+2. 可通过命令行参数指定并发的会话数量，为每个会话创建一个独立线程，当超过服务端最大并发数时，排队进行重试。
+扩展功能：
+1. 小文件合并功能：当客户端上传的文件较小时（如小于 1 MiB），将多个小文件合并保存为一或多个大文件，并通过一
+个
+key-value 数据库保存每个小文件对应的大文件及在该文件中的偏移、大小。
+2. 目录列表功能：当客户端请求的 URL 对应到一个目录时，以自定义的 JSON 格式返回该目录的文件（及子目录）列表，
+包含文件的大小、修改时间等属性。
+3. 交互式客户端：类似一个 FTP 客户端，可连接到指定的服务端目录，进行交互式的列表、上传、下载。
+
+3、功能性需求
+
+3.1功能汇总
+式的列表、上传、下载。
+模块名		功能类别	子功能
+客户端	系统启动	本地云启动，初始化界面，软件版本以及其他初始化数据同步
+	连接服务器	输入服务器账号，密码，ip地址，登录到服务器获取用户储存的文件列表
+	文件列表	获取当前文件夹下应该出现的文件列表
+	文件上传	上传文件到指定文件夹
+		
+
+文件下载		
+
+从指定文件夹下载文件
+		
+本地下载文件管理	下载之后的文件应由本地文件夹管理
+		
+
+通信纪录	文件上传纪录、下载纪录获取
+		
+服务器	用户接入	接收客户端的连接，管理客户端信息
+	各业务处理		
+
+处理客户端的各类型业务
+	文件管理		
+
+对客户传输的文件进行管理
+	并发负载	初始化30的处理线程
+	数据库设计与应用	各组自定义，服务于文件管理
+	日志	每天生成一个运行日志，包括业务处理、运行情况、故障记录等
+		
+
+
+
+4、非功能性需求
+功能类别	功能说明
+万级并发	要求一台服务器能够承受10000台以上的连接数接入
+大并发业务	要求一台服务器能承受200-300并发业务处理
+分布架构
+	
+
+	采用TCP流协议进行进程间通信
+系统拓展性	能够在尽量不修改源代码的前提下，拓展业务
+系统安全	承受一些非法操作的轰炸
+
+5、系统总体设计
+5.1系统总体框架（参考）
+5.2接入服务器逻辑结构（参考）
+5.3本地云客户端逻辑结构（参考）
+6、通信程序关键流程设计
+
+6.1 断线重连处理
+6.2 粘包/半包检测与处理
+6.3 文件缺失检测与处理
+
+7、立项标准
+
+7.1 项目小组
+7.2 开发周期要求
+7.3 编码规范要求
+
+8、考核标准
+
+8.1 项目总分为100分，各个模块考核比重如下：
+8.2 开发进度考核标准
+8.3 功能考核标准
+
+8.3.1 客户端
+8.3.2 服务器
+8.3.3 压力测试
+
+8.4 结项考核标准
+8.5 日常考核标准
+
+
+
+
+第五章 FTP 服务器的设计与实现
+FTP 服务器是整个文件传输系统中最为重要的一个部分。本章首先根据服务器的设计目
+标选择了相对合适的服务器模型，然后确定了服务器的总体框架，总框架分为界面框架和后
+台事务处理框架两个部分。最后详细介绍了服务器各功能模块的具体实现方法。
+5.1 FTP 服务器设计目标与选型
+5.1.1 服务器设计目标
+一个优秀的 FTP 服务器应该具备以下几点：
+（1）具备支持大量用户的并发访问能力。
+（2）用户账户的管理，可以自由设置各用户对文件的操作权限。
+（3）支持在线用户的相关信息的显示
+（4）支持连接数和传输文件数等相关数据的显示
+（5）支持文件的断点续传
+5.1.2 服务器模型介绍
+常用的网络服务器模型有循坏服务器、I/O 复用服务器、多线程并发服务器。
+（1）循环服务器
+循坏服务器指的是对于客户端的请求和连接，服务器在处理完毕一个之后再处理另一个，
+即串行处理客户的请求。面向连接的循坏服务器的工作流程如下：
+（a）创建套接字并将其绑定到指定端口，然后开始监听。
+（b）当客户端连接到来时，accept()函数返回新的连接套接字。
+（c）服务器在该套接字上进行数据的接收和发送。
+（d）在完成与该客户端的交互后关闭连接，返回执行步骤 b。
+（2）I/O 复用服务器
+应用程序发起 I/O 操作，系统内核缓冲 I/O 数据，当某个 I/O 准备好后，系统通知应用程
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+36
+
+序该 I/O 可读或可写，这样应用程序可以马上完成相应的 I/O 操作，而不需要等待系统完成
+相应 I/O 操作，从而应用程序不必因等待 I/O 操作而阻塞。
+I/O 复用的典型模型之一是 Select 模型，它的工作流程如下：
+（a）清空描述符集合。
+（b）建立需要监视的描述符与描述符集合的关系。
+（c）调用 select()函数。
+（d）检查监视的描述符判断是否已经准备好。
+（e）对已经准备好的描述符进程 I/O 操作。
+（3）多线程并发服务器
+多线程并发服务器可以同时处理多个客户请求，并发服务器常见的设计是“一个请求一个
+线程”：针对每个客户请求，主线程都会单独创建一个工作者线程，由工作者线程负责和客户
+端进行通信。多线程并发服务器的工作流程如下：
+（a）主线程创建套接字并将其绑定到指定端口，然后开始监听。
+（b）重复调用 accept()函数，当客户端连接到来时创建一个工作者线程处理请求。
+（c）工作者线程接受客户端请求，与客户端进行交互（发送或接收消息）。
+（d）工作者线程在交互完毕后关闭连接并退出。
+5.1.3 服务器选型
+循环服务器的特点是：当客户因为等待服务器处理请求而被阻塞时，应用程序无法继续往
+下执行。如果服务器端延迟过久，则会引发严重的网络阻塞。所以循环服务器适用于短期服
+务和不经常运行的服务，但是并不适合作为 FTP 服务器模型。
+I/O 复用服务器的最大优点是：系统开销较小，不需要创建新的线程进而不必维护这些线
+程。I/O 复用模型通常适用于服务器需要管理多个套接字的场景。如果 FTP 服务器采用 I/O 复
+用模型，可以通过异步 I/O 实现表面的并发性。但是客户端的请求都是由单线程进行处理，
+服务器线程会在所有连接中轮询等待 I/O 准备好，因此处理速度并不会比循坏服务器更快。
+况且 FTP 应用程序对每个请求的处理时间相对较长，所以 FTP 服务器不宜采用该 I/O 复用模
+型。
+多线程并发服务器可以充分利用 CPU 资源，主线程负责调用 accept()接受客户端连接，而
+工作线程负责处理业务逻辑和字符流的读取等。这样，即使在工作线程阻塞的情况下，也只
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+37
+
+是阻塞在线程范围内，并不会导致整个进程阻塞。当然，多线程服务器也有缺点：线程的频
+繁创建和销毁或上下文切换会消耗系统资源。本课题设计的是 FTP 服务器，所以 I/O 计算会
+占用大量的时间，等待 I/O 结束会造成 CPU 空闲从而降低了系统性能。因此采用单线程服务
+器难以提升 FTP 系统的性能。另外，目前 FTP 服务器大多运行在多核 CPU 的主机上面，非
+常适合采用多线程并发模型。
+本课题设计的 FTP 服务器采用多线程模型，即使用多个工作者线程对客户端的连接请求
+进行处理。当工作者线程数量大于 CPU 核心数的时候，操作系统将在多个工作者线程之间以
+时间分片的形式的切换处理机，从而减少了等待 I/O 结束的时间，提升了整个 FTP 系统的性
+能。FTP 多线程并发服务器模型示意图如图 5.1 所示。
+用于请求连接
+的套接字
+主线程
+工作
+线程1 工作
+线程2 工作
+线程3 套接字1 套接字2 套接字3 图 5.1 FTP 多线程并发服务器模型示意图
+5.2 服务器总体框架设计
+该服务器的开发环境是 Windows 8.1，使用了 Visual Studio 集成开发环境，利用 MFC 对
+整体软件进行开发。服务器总体框架分为两个部分：界面控制框架和后台事务处理框架。这
+两个框架分别由若干模块构成。界面控制框架主要的功能是对用户在服务器界面上的各项操
+作进行响应，涉及到连接控制和命令处理的部分给后台留出通信接口；后台事务处理框架主
+要的功能实现各类通信接口，实现服务器与客户端之间的交互所需的各种需求。FTP 服务器
+总体框架设计如下页的图 5.2 所示。
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+38
+
+界面控制框架
+后台事务处理框架
+系统日志
+在线用户统计 用户管理
+服务器配置
+连接状态与传输文件统计
+服务器对象
+控制连接 数据连接
+侦听用户连接
+FTP服务器总体框架
+命令处理 实时反馈
+图 5.2 FTP 服务器总体框架
+5.2.1 服务器界面框架设计
+本课题设计 FTP 服务器的主界面如下图 5.3 所示。
+图 5.3 FTP 服务器主界面
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+39
+
+根据 5.1.1 节提出的设计目标，本课题设计的 FTP 服务器界面分为五个窗口，分别是系统
+日志窗口、用户管理窗口、服务器配置窗口、在线用户统计窗口以及连接状态与传输文件统
+计窗口。该 FTP 服务器同客户端一样，也是一个以对话框为主界面的 MFC 应用程序。
+下面介绍服务器界面中五个窗口的设计内容：
+（1）系统日志窗口
+该窗口是 FTP 服务器启动后的默认显示窗口，用来显示服务器与客户端交互的所有信息，
+包括客户端发送过来的消息和服务器的回应消息。用户通过系统日志窗口可以清晰地获取每
+个操作的执行情况。
+（2）用户管理窗口
+该窗口主要是用来管理用户信息。服务器管理员可以在该窗口中添加、修改和删除用户信
+息。用户信息包括了用户登录名、用户密码、用户访问目录以及用户的权限。用户管理窗口
+提供了四个选择框供管理员设置用户权限，包括允许用户下载文件、允许用户上传文件、允
+许用户删除文件以及允许用户新建目录。
+（3）服务器配置窗口
+该窗口主要用来配置服务器的相关信息。主要包括以下几个部分：
+（a）FTP 端口设置。
+（b）FTP 服务器允许最大连接数目设置
+（c）连接超时设置，即某个客户连接至服务器，在设置的时间内没有进行任何操作，则
+服务器自动断开与该客户的连接。
+（d）欢迎信息，即客户端成功登陆后收到服务器端的第一条回应信息，例如在本课题中，
+欢迎信息为“Welcome to Gu Tongchen's FTP Server”。
+（e）两个设置选项，一个用来设置程序开始运行时自动最小化，另一个用来设置程序开
+始运行时自动开启服务器。
+（4）在线用户统计窗口
+该窗口主要用来显示在线用户的相关信息，包括了线程 ID、在线用户名、用户的 IP 地址
+以及用户登录的时间。
+（5）连接状态与传输文件统计窗口
+该窗口主要统计并显示了以下的信息：
+（a）所有的连接数目，包括之前连接现在已经断开的的连接。
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+40
+
+（b）现在仍保持连接状态的连接数目。
+（c）已下载和已上传的文件数目
+（d）已接收数据的比特量和已发送数据的比特量。
+支持并发连接的数目是 FTP 服务器的一项重要性能指标，通过该窗口可以了解该 FTP 的
+性能和负荷情况。
+5.2.2 后台事务处理框架设计
+服务器后台事务处理框架主要负责服务器与客户端之间的通信，为界面框架中的各类操
+作提供支持。设计后台事务处理框架首先要了解 FTP 服务器的工作流程，服务器的工作流程
+大致如下：
+（1）创建一个服务器对象，同时通过 CArchive 对象的序列化方法来加载用户管理模块中
+account.dat 文件中保存的用户相关信息。
+（2）创建 CAsyncSocket 类型的监听套接字，开始监听。
+（3）收到客户端的连接请求，触发 OnAccept()函数，建立控制连接。
+（4）在 OnAccept()函数中创建一个新的线程来处理这个连接。若又收到客户端请求，则回到
+步骤 3 继续执行。
+（5）对客户端发来的用户名和密码进行身份验证，可以通过同步骤 1 中加载的用户信息进行
+比对来实现。
+（6）根据客户端发送的“PORT”或“PASV”命令建立主动传输模式或被动传输模式，打开
+数据通道，进行文件数据的传输，传输完成后关闭数据通道并退出线程。
+服务器的工作流程如下页的图 5.4 所示。
+根据上述介绍的 FTP 服务器工作流程设计的后台事务处理框架分为以下几个模块：
+（1）服务器对象模块
+该模块主要由派生于 CWind 类的 CFTPObject 类实现，这是后台服务器的总体控制模块，
+包括了服务器开启与关闭、监听连接、显示系统日志以及统计连接相关数据等一系列操作。
+（2）服务器监听模块
+该模块主要由派生于 CAsyncSocket 类的 CFTPListenSocket 类实现。在该类中重载了基类
+中的 OnAccept()函数，该函数的实现原理是：FTP 服务器每接收一个连接请求就创建一个线
+程去处理。
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+41
+
+（3）连接管理模块
+该模块主要由派生于 CWinThread 类的 CFTPHandleThread 类实现。该类负责实现服务器
+与客户端的通讯、统计发送和接收的字节数以及超时断开连接等功能。
+（4）控制连接与命令处理模块
+该模块主要由派生于 CSocket 类的 CFTPControlSocket 类实现。该类主要实现了消息的发
+送和接收、对客户端命令的解析与处理等功能。
+（5）数据连接模块
+该类主要由派生于 CAsyncSocket 类的的 CFTPDataSocket 类实现。该类通过重载基类中
+的 OnAccept()、OnConnect()、OnSend()以及 OnReceive()函数实现了客户端与服务器端之间的
+数据传输。
+（6）实时反馈模块
+该类由前台界面总体控制类 CMyFTPSeverDlg 实现，该类将监控系统运行时的一些特定
+信息并将这些信息反馈到连接状态与传输文件统计窗口。
+初始化Socket 创建服务器对象并加载 用户信息到缓存
+创建监听Socket
+监听是否有请求到来
+调用OnAccept()函数建立 控制连接
+创建新的线程处理该请求
+通过控制连接接收命令并 对命令进行处理
+是否为已注册用户
+Y N
+N
+处理后续的命令
+根据工作模式命令建立数 据通道 通过数据通道进行文件的 上传和下载
+关闭线程和Socket
+Y
+图 5.4 服务器工作流程
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+42
+
+5.3 服务器各功能模块的详细实现
+5.2 节介绍了 FTP 服务器的总体框架设计，总体框架分为界面控制框架和后台事务处理框
+架两个部分。界面控制框架主要分为五个界面窗口显示模块，由一个界面总体控制模块对这
+五个模块进行一系列的操作。而后台事务处理主要分为服务器对象模块、服务器监听模块、
+控制连接管理模块、命令处理模块、数据连接模块以及实时反馈模块。
+5.3.1 界面总体控制模块的实现
+界面总体控制模块负责整个 FTP 服务器界面的的搭建与显示以及一些传输信息的动态更
+新。该模块主要由派生于 CMyFTPSeverDlg 类实现，该类派生于 CDialog 类和 CEventRelated
+类。由于 CMyFTPSeverDlg 类包含了众多成员和成员函数，所以下面只列举其中关键成员以
+及成员函数：
+（1） CTracePage m_TracePage; //日志窗口对象
+CUserAccountPage m_UserAccountPage; //用户管理窗口对象
+COnlineAccountPage m_OnlineAccountPage; //在线用户显示对象
+CConfigurationPage m_ConfigurationPage; //服务器配置窗口对象
+CStatisticsPage m_StatisticsPage; //连接状态与传输文件统计窗口
+以上五个成员代表了服务器界面中的五个窗口类对象，CMyFTPSeverDlg 类通过类对象即
+可调用五个窗口类中的方法，从而达到对窗口进行控制的效果。这五个窗口类将在后续章节
+中详细介绍。
+（2）void CreateSelectBar(); //创建功能选择列表框
+功能选择列表框如下图所示：
+图 5.5 功能选择列表框
+创建选择列表框首先创建一个名为 m_SelectBar 的 CListControl 类型对象以及一个名为
+m_ImageList 的 CImageList 类型对象，然后需要调用 CListControl 控件类的相关方法，具体实
+现如下：
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+43
+
+m_ImageList.Add(hIcon); //图像列表加载图标
+m_SelectBar.SetImageList(&m_ImageList, LVSIL_NORMAL); //设置 m_SelectBar 的图像列
+表为 m_ImageList
+m_SelectBar.InsertItem(0, "Server Log", 0);
+//将文本“Sever Log”以及图像列表中的第一个图标插入到 m_SelectBar 的第一项中，后
+面几项以此类推即可
+（3）ActivatePage(int nIndex); //切换活跃窗口函数
+用户在点击选择列表框的选项时会切换到相应窗口，切换窗口的工作主要由该函数实现，
+当传入的 nIndex 参数为 0 时，切换到系统日志窗口，具体实现如下：
+m_OnlineUsersPage.ShowWindow(SW_HIDE);
+m_ConfigurationPage.ShowWindow(SW_HIDE);
+m_StatisticsPage.ShowWindow(SW_HIDE);
+m_UserAccountPage.ShowWindow(SW_HIDE);
+m_TracePage.ShowWindow(SW_SHOW);
+5.3.2 界面窗口显示模块的实现
+界面窗口显示模块分为五个窗口模块，每个模块负责处理对应的窗口事务，窗口显示模块
+的具体实现如下：
+（1）系统日志窗口模块
+系统日志窗口模块主要负责系统日志的显示，该模块由派生于 CDialog 类的 CRecord 类
+实现。下面重点介绍 CRecord 类的两个重要成员函数：
+（a）void AddRecordLine(LPCTSTR str)
+该函数的参数的含义是需要显示的一次命令交互内容，显示格式为“线程 ID 号+发送或
+回应信息”，例如“6744 220 Transfer Complete”。该函数的主要作用是将需要显示的日志的内
+容添加到 CStringList 类型的列表中，具体实现如下：
+m_QueueLock.Lock(); //获取临界区对象
+m_LogQueue.AddTail(m_strText); //将日志内容添加到列表 m_LogQueue
+m_QueueLock.Unlock(); //释放临界区对象
+PostMessage(WM_ADDRECORDLINE); //向窗口发送消息
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+44
+
+（b）void OnAddRecordLine(WPARAM, LPARAM)
+在程序窗口收到 WM_ADDRECORDLINE 自定义消息后会调用函数来取出 列表
+m_LogQueue 中的第一个值并显示到系统日志窗口中，具体实现如下：
+m_strText = m_LogQueue.RemoveHead();
+m_TraceList.AddString(m_strText);
+（2）用户管理窗口模块
+用户管理窗口负责用户的用户信息的添加、修改、删除以及用户操作权限设置，该模块主
+要由 CAccount 类、CAccountManager 类以及 CAccountPage 类实现。下面重点介绍这三个类
+的作用及具体实现。
+（a）CAccount 类
+CAccount 类派生于 CObject 类，主要保存了用户名、密码以及用户的操作权限，并提供
+了 Serialize()函数以序列化的方法以完成对用户设置的保存和加载。下面列举了 CAccount 类
+的关键成员变量：
+CString m_strName; //用户名
+CString m_strPassword; //密码
+CString m_strHomeDirectory; //服务器端目录
+BOOL m_bAllowDownload; //允许下载
+BOOL m_bAllowUpload; //允许上传
+BOOL m_bAllowCreateDirectory; //允许用户创建目录
+（b）CAccountManager 类
+CAccountManager类主要负责对用户组的管理，该类定义了FTP用户组：CArray<CAccount,
+CAccount&> m_AccountArray，并通过 GetUserList(CArray<CAccount, CAccount&>&array)和
+UpdateUserList(CArray<CAccount, CAccount&>&array)两个成员函数来实现获取用户列表和
+更新用户组列表的功能。
+（c）CAccountPage 类
+CAccountPage 类派生于 CDialog 类，主要负责用户管理窗口中具体操作的实现。该类的
+重要成员函数如下：
+void OnAddAccount(); //添加用户信息
+void OnEditAccount(); //修改用户信息
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+45
+
+void OnDelAcount(); //删除用户信息
+下面就 OnAddAccount()函数的实现进行说明：
+if (strName.CompareNoCase(dlg.m_strName) == 0) //判断用户是否已存在
+{AfxMessageBox("Sorry, this user already exists!");return; }
+CAccount account; //定义新的用户组
+account.m_strName = dlg.m_strName; //获取用户名
+account.m_strPassword = ""; //初始密码设为空
+int nItem = m_AccountsList.InsertItem(0, account.m_strName, 0); //将用户名插入到用户名显
+示控件
+int index = m_AccountArray.Add(account); //更新用户组列表
+最终实现的用户管理窗口如图 5.6 所示。
+图 5.6 用户管理窗口
+（3）服务器配置窗口
+服务器配置窗口主要负责 FTP 服务器的各项参数的设置，比如 FTP 端口，最大连接数，
+欢迎消息等参数。配置窗口主要由派生于 CDialog 类的 CConfigurationPage 类实现，OnApply()
+是该类的主要成员函数，它的作用是将用户配置好的参数通过 WriteProfileInt()函数或
+WriteProfileString()写入到系统注册表。在程序启动时界面总体控制类 CApplicationDlg 类会通
+过 CConfigPage 对象来获取存储在注册表中的信息，获取注册表信息可以采用 GetProfileInt()
+或 GetProfileString()函数，示例如下：
+m_ConfigPage.m_Port = AfxGetApp()->GetProfileInt("Config", "FTP_Port", 21); //读取端口配置
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+46
+
+信息，若未找到对应信息则返回默认值 21。
+m_ConfigPage.m_MaxUsers = AfxGetApp()->GetProfileInt("Config", "MaxUsers", 10); //读取最
+大连接用户数，若未找到对应信息则返回默认值 10
+m_ConfigPage.m_Welmsg = AfxGetApp()->GetProfileString("Config", "Welmsg", "Welcome to Gu
+tongchen's FTP Server"); //读取欢迎信息，若未找到对应信息则返回默认值（第三个参数）
+将配置的写入注册表可以避免服务器每次启动时重新配置参数，方便了用户对服务器进
+行配置，最终实现服务器配置窗口如图 5.7 所示。
+图 5.7 服务器配置窗口
+（4）在线用户统计窗口
+在线用户统计窗口负责显示在线用户的线程 ID、用户名、IP 地址和登录时间。该窗口主
+要由派生于 CDialog 类的 COnlineAccount 类实现。该类的关键成员函数如下：
+（a）AddAccount(long ThreadID, CString Userame, Cstring UserAddress)
+每当有新用户连接到服务器时，COnlineAccount 类的对象就会调用该函数添加新用户的
+相关信息到统计窗口中，具体实现如下：
+index = m_OnlineAccount.InsertItem(0, ThreadID);
+m_OnlineAccount.SetItemText(index, 1, UserName);
+m_OnlineAccount.SetItemText(index 2, UserAddress);
+m_OnlineAccount.SetItemText(index, 3, CTime::GetCurrentTime().Format("%H:%M:%S"));
+（b）DeleAccount(long ThreadID)
+每当有用户断开与服务器的连接时，COnlineAccount 类的对象就会调用该函数将该用户
+的相关信息从统计窗口中删除，具体实现如下：
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+47
+
+LVFINDINFO Ctrl;
+Ctrl.psz = ThreadID;
+int index = m_OnlineAccount.FindItem(&Crtl);
+if (nIndex != -1)
+{
+m_OnlineAccount..DeleteItem(index);
+}
+最终实现的在线用户统计窗口如图 5.8 所示。
+图 5.8 在线用户统计窗口
+（5）连接状态与传输文件统计窗口
+该窗口主要为服务器管理员展示了反映服务器工作情况的一些数据（5.2节中已作介绍），
+主要由派生于 CDialog 类的 CStatisticsPage 类实现。该类定义了名为 m_Statistics 的 CListCtrl
+类型列表控件，然后初始化该控件：
+m_Statistics.InsertItem(0, "Total Connections");
+m_Statistics.SetItemText(0, 1, "0");
+m_Statistics.InsertItem(1, "Current Connections");
+m_Statistics.SetItemText(1, 1, "0");
+后续的列表项初始化依次类推即可依次类推即可，然后调用函数 InsertValue(int index，int
+value)或其重载版本 InsertValue(int index，LPCTSTR value)来更新该列表。
+最终实现的连接状态与传输文件统计窗口如图 5.9 所示。
+图 5.9 连接状态与传输文件统计窗口
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+48
+
+5.3.3 服务器对象模块
+服务器对象模块是后台事务处理框架中的总体控制模块，主要为 FTP 服务器的各类功能
+提供实现接口。该模块是由派生于 CWnd 类的 CFTPObject 类实现的，下面列举了服务器对象
+的模块的关键成员以及成员函数：
+（1）friend CcontrolSocket; //将控制连接类设为友元类，方便 CFTPObject 类使用其对象以及
+成员函数
+CAccountManager m_AccountManager; //用户管理类对象
+CListenSocket m_ListenSocket; //监听套接字对象
+CFTPEventRelated *m_EventRelated; //指向关联事件对象的指针，用于更新显示窗口中连
+接与数据统计相关信息
+CTypedPtrList<CObList, CControlThread*>threadlist; //创建一个管理线程指针的列表
+（2）BOOL FTPSeverStart(); //开启服务器
+void FTPSeverStop(); //关闭服务器
+BOOL IsStart(); //判断服务器是否处于开启状态
+int GetServerPort(); //获取已设置的端口
+int GetServerMaxAccounts(); //获取已设置的最大连接数
+LRESULT OnThreadBegin(WPARAM wParam, LPARAM lParam );//当某线程启动时会触发
+该函数来更新相关状态信息（比如连接数）
+LRESULT OnThreadEnd(WPARAM wParam, LPARAM lParam); //当某线程关闭时会触发该
+函数来更新相关状态信息
+LRESULT OnThreadInfo(WPARAM wParam, LPARAM lParam); //该函数用来更新服务器的
+收发文件的数量及其字节数信息
+其中服务器开启函数 FTPSeverStart()的具体实现如下：
+（a）判断服务器状态参数 m_Run 是否为 Ture，若为 Ture 则函数立刻返回。
+（b）创立监听套接字 m_FTPListenSocket。
+（c）调用 Listen()方法在指定端口开始监听。
+服务器关闭函数 FTPSeverStop()的具体实现如下：
+（a）判断服务器状态参数 m_Run 是否为 Flase，若为 False 则函数立刻返回。
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+49
+
+（b）创建一个循坏：获取临界区对象（防止线程操作冲突），读取线程列表 threadlist 中
+的第一个线程，释放临界区对象，关闭该线程，并将该线程从线程列表中移除。
+5.3.4 服务器监听模块
+服务器监听模块主要由 CFTPListenSocket 类实现，该类派生于 CAsyncSocket 类。
+CAsyncSocket 类在 3.2.3 节中已做过介绍，利用 CAsyncSocket 类处理消息，只需在它的子类
+中重写 OnAccept()、OnReceive()和 OnSend()等虚函数即可。服务器监听模块的工作流程如图
+5.10 所示。
+收到连接请求，触
+发OnAccept()函数 创建临时Socket对 象并接受连接
+创建线程去处理该 连接
+添加该线程到线程 列表
+将Socket对象传递 给该线程
+侦听用户连接
+开始
+运行线程
+结束 图 5.10 服务器监听模块工作流程图
+在 CFTPListenSocket 类中主要重写了 OnAccept()函数来处理客户端的请求，该函数具体
+实现如下：
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+50
+
+CSocket tempsocket; //创建临时 socket 对象
+Accept(tempsocket); //接受客户端的连接，后续的服务器与客户端的交互都会通过该套接
+字实现，若又出现客户端连接请求，则会再次触发 OnAccept()函数。
+CFTPHandleThread* m_Thread = (CFTPHandleThread*) AfxBeginThread(RUNTIME_CLASS
+(CFTPHandleThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED); //创建一个
+线程去处理客户端的连接请求，创建成功后暂时挂起。
+CFTPObject *ptr= (CFTPObject *)m_ptr;
+ptr->threadlist.AddTail(m_Thread); //将创建的线程添加到线程列表当中
+m_Thread->m_socket=tempsocket.Detach(); //将套接字句柄传递给该线程
+m_Thread->ResumeThread(); //运行该线程
+5.3.5 连接管理模块
+连接管理模块主要负责管理监听模块中所创建的线程，在该线程中实现服务器与客户端
+的通讯、统计发送和接收的比特数以及超时断开等功能。在设计 MFC 线程类时，通常以
+CWinThread 类为基类派生出一个线程类，在线程类中根据需要来重写 InitInstance()和
+ExitInstance()函数。因此连接管理模块由派生于 CWinThread 类的 CFTPHandleThread 类实现，
+其中的关键成员及成员函数如下：
+（1）CWnd *m_WndObject; //窗口类对象，用于向窗口发送通知消息
+SOCKET m_socket; //SOCKET 对象，用于绑定控制连接套接字
+CControlSocket m_ControlSocket; //控制连接套接字对象，用于调用命令处理模块
+int m_ReceivedAmounts; //已接收的字节数
+int m_SendAmounts; //已发送的字节数
+（2）void ReceivedAccounts(int m_Bytes); //累加已接收的字节数
+void IncSentAccounts(int m_Bytes); //累加已发送的字节数
+另外，连接管理模块还有一项重要任务：重写 CWinThread 类中的 InitInstance()和
+ExitInstance()函数。主要作用是执行线程创建时的一些初始化工作以及线程结束时的一些清
+理工作。InitInstance()函数的具体实现如下：
+（1）将控制连接套接字绑定到 m_socket。
+（2）调用 GetPeerName()函数获取客户端的地址和端口。
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+51
+
+（3）调用 SendMessage()函数向主窗口通知线程启动消息，触发服务器对象模块中的
+OnThreadBegin()函数。
+（4）调用服务器对象模块中的 CheckMaxAccounts()函数判断当前连接用户数是否超过最大连
+接数，如超过则终止线程。
+（5）向客户端发送欢迎消息，启动定时器，定时调用 CheckTimeOut()函数判断连接是否超时。
+ExitInstance()函数的具体实现如下：
+（1）将当前线程从线程列表 threadlist 中删除。
+（2）终止当前线程
+5.3.6 控制连接与命令处理模块
+控制连接与命令处理模块主要负责控制连接上面的消息的发送和接收以及命令的处理。
+该模块主要由派生于 CSocket 的 CControlSocket 实现的，CControlSocket 类重载了基类中的
+OnReceive()函数来实现与客户端的互相通信，该类的关键成员及成员函数如下：
+（1）friend CFTPDataSocket; //设置数据连接类为友元类
+CFTPDataSocket *m_DataSocket; //指向数据连接类的指针
+int m_Status; //控制连接所处的状态
+CStringList m_CommandsList; //构建 CStringList 对象用于存放命令
+CString m_recvbuffer; //接收缓冲区
+CAccount m_account; //构建 CAccount 对象用于存放用户信息
+（2）void OnReceive(); //若有数据到达则会触发该函数
+BOOL SendMessage(LPCTSTR str); //向客户端发送回应消息
+void HandleCommand(); //对 FTP 命令进行处理
+void GetAndHandleLine(); //获取一行消息并对其进行处理
+BOOL CreateFTPDataConnection(); //创建数据连接
+OnReceive()函数的具体实现如下：
+（1）调用 Receive()函数接收数据到字符串 m_buf 中。
+（2）根据 Receive()函数的返回值 ncount 进行判断。
+（3）若 ncount 为 0，则关闭该套接字。
+（4）若 ncount 为 SOCKET_ERROR，则调用 GetLastError()函数显示错误信息。
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+52
+
+（5）若 ncount 为其他值，则将 m_buf 添加到 m_recvbuffer 缓冲区，并调用函数进行解析和
+处理。
+SendMessage(LPCTSTR str)函数的具体实现如下：
+（1）调用 Send()函数向客户端发送消息
+（2）若返回值为 SOCKET_ERROR，则终止线程。
+（3）统计发送的字节数。
+HandleCommand()函数的主要作用是对客户端发送过来的 FTP 命令做出不同的回应，例
+如，当接收到 LIST 命令时，调用 GetDirectoryList()函数获得目录的相关信息，然后再调用
+SendList()函数将目录信息发送给客户端；当接收到 RETR 命令时，打开数据通道，调用
+SendFile()函数将文件数据发送给客户端；当接收到 STOR 命令时，打开数据通道，调用
+RecvFile()函数接收客户端发送过来的文件数据。GetAndHandleLine()函数的主要作 用是先获
+取一行消息，再使用 HandleCommand()函数进行处理，具体实现如图 5.11 所示。
+CreateFTPDataConnection()函数的主要作用是以主动方式建立数据连接（被动方式建立数
+据连接在放在 HandleCommand()函数中实现）。该函数的具体实现如图 5.12 所示。
+开始
+判断缓冲区是否为空
+解析出缓冲区“\r\n” 左边的命令字符串并放 入到temp中 判断temp是否为空
+将temp添加到 m_CommandsList列表 调用HandleCommand() 对命令进行解析并处理 结束
+Y Y N
+N
+图 5.11 GetAndHandleLine()函数实现流程图
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+53
+
+开始 创建CFTPDataSocket对象 申请网络事件通知
+调用Connect()函数连接 客户端
+打开数据通道
+结束 图 5.12 CreateFTPDataConnection()函数实现流程图
+5.3.7 数据连接模块
+数据连接模块负责客户端与服务器之间所有的文件传输，主要由派生于 CAsyncSocket 类
+的 CFTPDataSocket 类实现，在该类中重写了 OnSend()、OnConnect()、OnReceive()和 OnAccept()
+函数，CFTPDataSocket 类的关键成员及成员函数如下：
+（1）BOOL m_IsConnected; //判断连接状态
+DWORD m_TotalTransfered; //已传输比特数
+CFile m_FTPFile; //文件句柄
+CString m_sList; //用于存放目录详细信息的字符串
+CControlSocket *m_ControlSocket; //控制连接对象
+（2）PlanToRecvFile(CString filename); //打开文件，准备向其中写入数据
+（3）PlanToSendFile(CString filename); //打开文件，获取文件大小，准备读取其中数据并发送
+给客户端
+（4）virtual void OnAccept(int nErrorCode); //该函数主要负责在被动模式下接受客户端的连接
+并将 m_IsConnected 设为 True，表示数据通道已打开
+（5）virtual void OnConnect(int nErrorCode); //CFTPDataSocket 对象调用 Connect()函数会触发
+该函数，该函数主要根据 nErrorCode 的值来向客户端反馈错误信息
+（6）virtual void OnReceive(int nErrorCode)
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+54
+
+该函数的主要作用是在数据连接中接收数据，具体实现如下：
+（a）调用 Receive()函数接收数据到字符串 data 中，每次接收 4096 个字节的数据。在接
+收数据之前判断是否为续传模式，如是续传模式，则根据指示的偏移量移动文件指针。
+（b）根据 Receive()函数的返回值 ncount 进行判断。
+（c）若 ncount 为 0，则表示数据接收完毕，关闭数据连接。
+（d）若 ncount 为 SOCKET_ERROR，则表示接收时出错，向客户端反馈出错信息。
+（e）若 ncount 为其他情况则说明正在接收中，将接收的数据写入文件，文件指针偏移量
+也相应调整。
+（7）virtual void OnSend(int nErrorCode)
+该函数的主要作用是在数据连接中发送数据，数据分为两种，一种为文件数据，另一种为
+目录信息数据。该函数的具体实现如下：
+（a）根据客户端发送的命令判断发送需求，若收到“RETR"命令，则置 m_Status 为
+DOWNLOAD；若收到“LIST”命令，则置 m_Status 为 LIST。
+（b）若 m_Status 为 DOWNLOAD，调用 Send()函数发送指定文件数据。若为续传模式，
+则在发送数据之前应根据偏移量调整文件指针。
+（c）若 m_Status 为 LIST，调用 GetDirectoryList()函数获取指定目录信息，然后再调用
+Send()函数发送目录信息给客户端。
+5.3.8 实时反馈模块
+实 时 反 馈 模 块 主 要 负 责 将 服 务 器 状 态 的 变 化 情 况 反 馈 给 管 理 员 ， 该模块由
+CMyFTPSeverDlg 类和 CEventRelated 类共同实现。实现的原理是：在 CEventRelated 类定义
+了一系列状态变化接口函数，这些函数被设置为虚函数，而 CMyFTPSeverDlg 类继承自
+CEventRelated 类，在 CMyFTPSeverDlg 类重写这些虚函数，实现相应的功能。CEventRelated
+类定义的接口函数如下：
+virtual void AccountConnected(long ThreadID, CString Account, CString IPAddress) ;
+//有新的用户连接
+virtual void AccountDisconnected(long ThreadID, CString Account);
+//有用户连接断开
+virtual void ReceivedQuantityChange(int totalbytes); 
+南京邮电大学专业学位硕士研究生学位论文 第五章 FTP 服务器的设计与实现
+55
+
+//接收的字节数的变化
+virtual void SendQuantityChange(int totalbytes);
+//发送的字节数的变化
+virtual void StatisticsChange(int index, int value);
+//连接状态与传输文件统计窗口中相关参数的变化
+5.4 本章小结
+本章主要介绍了 FTP 服务器的设计与具体实现。首先阐述了 FTP 服务器的设计目标并选
+择了多线程模型，然后将服务器总体框架分为界面控制框架和后台事务处理框架：界面控制
+框架主要是对用户在服务器界面上的各项操作进行响应；后台事务处理框架主要的功能实现
+各类通信接口，实现服务器与客户端之间的交互所需的各种需求，最后介绍了服务器界面框
+架和后台事务处理框架中各功能模块的详细实现。
