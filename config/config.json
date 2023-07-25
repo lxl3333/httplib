@@ -1,0 +1,16 @@
+{
+    "address":"",
+    "runUser":"",
+    "concurrencyLimit":3,
+    "keepaliveLimit":5,
+    "handler":[
+        {
+            "url":"/data",
+            "handler":"data",
+            "dir" :"/var/test/httplib/data"
+        },
+        {
+            "url":"/data"
+        }
+    ]
+}
