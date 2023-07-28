@@ -1,5 +1,5 @@
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include <string>
 #include <vector>
@@ -28,4 +28,4 @@ private:
     std::vector<Handler> handlers_;
 };
 
-#endif  // CONFIG_H_
+#endif  // CONFIG_H
