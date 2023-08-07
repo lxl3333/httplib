@@ -6,8 +6,11 @@
 class FtpServer{
 public:
     FtpServer();
+    void start();
+    void run();
 private:
     Config config_;
+    
 };
 
 

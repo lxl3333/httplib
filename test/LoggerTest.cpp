@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <sstream>
-#include "src/base/Logger.h"
+#include "../src/base/Logger.h"
 
 TEST(LoggerTest, DebugLog) {
     std::stringstream log_stream;

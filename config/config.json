@@ -1,6 +1,6 @@
 {
-    "address":"",
-    "runUser":"",
+    "address":"localhost:8080",
+    "runUser":"root",
     "concurrencyLimit":3,
     "keepaliveLimit":5,
     "handler":[
@@ -10,7 +10,9 @@
             "dir" :"/var/test/httplib/data"
         },
         {
-            "url":"/data"
+            "url":"/data",
+            "handler":"delete",
+            "dir":"/var/test/httplib/data"
         }
     ]
 }

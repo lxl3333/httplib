@@ -15,7 +15,7 @@ public:
     };
 
     Logger(std::ostream& log_stream);
-    void Log(int level,std::string message);
+    void Log(Logger::LogLevel level,std::string message);
     void Debug(std::string message);
     void Info(std::string message);
     void Warning(std::string message);
