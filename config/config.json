@@ -3,16 +3,81 @@
     "runUser":"root",
     "concurrencyLimit":3,
     "keepaliveLimit":5,
-    "handler":[
+    "handler": [
         {
-            "url":"/data",
-            "handler":"data",
-            "dir" :"/var/test/httplib/data"
+          "url": "/files",
+          "handler": "getFiles",
+          "dir": "/var/ftp/files"
         },
         {
-            "url":"/data",
-            "handler":"delete",
-            "dir":"/var/test/httplib/data"
+          "url": "/files/{filename}",
+          "handler": "getFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/upload",
+          "handler": "uploadFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/download/{filename}",
+          "handler": "downloadFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/delete/{filename}",
+          "handler": "deleteFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/create-directory",
+          "handler": "createDirectory",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/rename/{filename}",
+          "handler": "renameFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/move/{filename}",
+          "handler": "moveFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/copy/{filename}",
+          "handler": "copyFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/permissions/{filename}",
+          "handler": "changeFilePermissions",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/auth/login",
+          "handler": "login"
+        },
+        {
+          "url": "/auth/register",
+          "handler": "register"
+        },
+        {
+          "url": "/auth/logout",
+          "handler": "logout"
+        },
+        {
+          "url": "/users/{username}",
+          "handler": "getUser",
+          "dir": "/var/ftp/users"
+        },
+        {
+          "url": "/users/{username}/password",
+          "handler": "updateUserPassword"
+        },
+        {
+          "url": "/server/info",
+          "handler": "getServerInfo"
         }
     ]
 }
