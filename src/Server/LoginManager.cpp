@@ -2,7 +2,7 @@
 
 LoginManager::LoginManager() {}
 
-std::string LoginManager::handle_login_request(const httplib::Request& req, httplib::Response& res) {
+bool LoginManager::handle_login_request(const httplib::Request& req, httplib::Response& res) {
     std::string username = req.get_param_value("username");
     std::string password = req.get_param_value("password");
 
@@ -20,12 +20,12 @@ std::string LoginManager::handle_login_request(const httplib::Request& req, http
 
         res.status = 200 ;
         res.set_content(token, "text/plain");
-        return token;
+        return true;
     }
 
     res.status = 401;
     res.set_content("Invalid credentials", "text/plain");
-    return "";
+    return false;
 }
 
 void LoginManager::handle_logout_request(const httplib::Request& req, httplib::Response& res) {

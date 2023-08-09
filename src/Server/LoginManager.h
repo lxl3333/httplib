@@ -18,7 +18,7 @@ class LoginManager {
 public:
     LoginManager();
 
-    std::string handle_login_request(const httplib::Request& req, httplib::Response& res);
+    bool handle_login_request(const httplib::Request& req, httplib::Response& res);
     void handle_logout_request(const httplib::Request& req, httplib::Response& res);
     bool token_verification_middleware(const httplib::Request& req, httplib::Response& res);
 
