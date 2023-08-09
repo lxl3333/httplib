@@ -13,6 +13,7 @@ public:
     bool handleRenameFile(const httplib::Request& req, httplib::Response& res);
     bool handleMoveFile(const httplib::Request& req, httplib::Response& res);
     bool handleCopyFile(const httplib::Request& req, httplib::Response& res);
+    bool handleRemoveFile(const httplib::Request& req, httplib::Response& res);
 //    void handleSetPermissions(const httplib::Request& req, httplib::Response& res);
 
 private:

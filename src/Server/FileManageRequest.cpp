@@ -58,6 +58,20 @@ bool FileManageRequest::handleCopyFile(const httplib::Request& req, httplib::Res
     return false;
 }
 
+bool FileManageRequest::handleRemoveFile(const httplib::Request& req, httplib::Response& res) {
+    std::string filename = req.matches[1];
+    std::string targetpath = req.body;
+    if (fileManager_.RemoveFile(filename)) {
+        res.status = 200;
+        res.set_content("File or directory delete successfully", "text/plain");
+        return true;
+    } else {
+        res.status = 500;
+        res.set_content("Failed to delete file or directory", "text/plain");
+    }
+    return false;
+}
+
 // void FileManageRequest::handleSetPermissions(const httplib::Request& req, httplib::Response& res) {
 //     std::string filename = req.matches[1];
 //     std::string permissions = req.body;
