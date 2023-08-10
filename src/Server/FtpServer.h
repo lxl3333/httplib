@@ -1,18 +1,22 @@
 #ifndef FTPSERVER_H
 #define FTPSERVER_H
 
+#include<string>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 #include "../base/Config.h"
 #include "HandlerFactory.h"
 #include "../include/httplib.h"
-
+#include "../base/Logger.h"
+#include "../base/Singleton.h"
 class FtpServer {
 public:
-    FtpServer():
-      config_("../../config/config.json"),
-      server_()
+    FtpServer(std::string path):
+      server_(),
+      config_(path)
     {
-        // Initialize your config as needed
-        // config_ = ...
     }
 
     void start() {
@@ -20,7 +24,7 @@ public:
         configureServer(server_);
 
         // Start the server
-        server_.listen("localhost", 8080);
+        server_.listen(config_.address(), 8080);
     }
 
 private:
@@ -28,13 +32,30 @@ private:
     httplib::Server server_;
     void configureServer(httplib::Server& server) {
         // Set the server's run user
-        if (config_.address()!="") {
-            //server.set_user_and_group(config.runUser.c_str());
-        }
+        
+        uid_t currentUserId=getuid();
+
+        if (currentUserId == 0 && config_.run_user()!="") {
+                // Get the user ID for the specified user
+            struct passwd* pw = getpwnam(config_.run_user().c_str());
+            if (pw == nullptr) {
+                std::string errorMsg = "Error:User '"+config_.run_user()+"' not found.";
+                Singleton<Logger>::getInstance().Debug(errorMsg);
+                exit(1);
+            } else {
+                // Change the user ID of the process
+                if (setuid(pw->pw_uid) != 0) {
+                    std::string errorMsg="Error: Failed to set user ID for '"+config_.run_user() +"'.";
+                    Singleton<Logger>::getInstance().Debug(errorMsg);
+                    exit(1);
+                } 
+            }
+        } 
 
         // Set the server's concurrency limit
         if (config_.concurrency_limit() > 0) {
-            //server.set_max_threads(config.concurrencyLimit);
+            int concurrency_limit=config_.concurrency_limit();
+            server_.new_task_queue=[concurrency_limit ](){return new httplib::ThreadPool(concurrency_limit);};
         }
 
         // Set the server's keep-alive limit
