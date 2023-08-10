@@ -5,27 +5,32 @@
     "keepaliveLimit":5,
     "handler": [
         {
-          "url": "/files",
-          "handler": "getFiles",
+          "url": "/files/Dir",
+          "handler": "getDir",
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/{filename}",
-          "handler": "getFile",
+          "url": "/files/upload/FixedFile",
+          "handler": "uploadFixedFile",
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/upload",
-          "handler": "uploadFile",
+          "url": "/files/upload/ChunkedFile",
+          "handler": "uploadChunkedFile",
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/download/{filename}",
-          "handler": "downloadFile",
+          "url": "/files/download/FixedFile",
+          "handler": "downloadFixedFile",
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/delete/{filename}",
+          "url": "/files/download/ChunkedFile",
+          "handler": "downloadChunkedFile",
+          "dir": "/var/ftp/files"
+        },
+        {
+          "url": "/files/delete",
           "handler": "deleteFile",
           "dir": "/var/ftp/files"
         },
@@ -35,23 +40,18 @@
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/rename/{filename}",
+          "url": "/files/rename",
           "handler": "renameFile",
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/move/{filename}",
+          "url": "/files/move",
           "handler": "moveFile",
           "dir": "/var/ftp/files"
         },
         {
-          "url": "/files/copy/{filename}",
+          "url": "/files/copy",
           "handler": "copyFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/permissions/{filename}",
-          "handler": "changeFilePermissions",
           "dir": "/var/ftp/files"
         },
         {
@@ -59,25 +59,12 @@
           "handler": "login"
         },
         {
-          "url": "/auth/register",
-          "handler": "register"
+          "url": "/auth/verify_token",
+          "handler": "verify_token"
         },
         {
           "url": "/auth/logout",
           "handler": "logout"
-        },
-        {
-          "url": "/users/{username}",
-          "handler": "getUser",
-          "dir": "/var/ftp/users"
-        },
-        {
-          "url": "/users/{username}/password",
-          "handler": "updateUserPassword"
-        },
-        {
-          "url": "/server/info",
-          "handler": "getServerInfo"
         }
     ]
 }
