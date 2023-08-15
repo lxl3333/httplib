@@ -27,7 +27,7 @@ public:
 
     static T& getInstance()
     {
-        pthread_once(once_,&Singleton::init);
+        pthread_once(&ponce_,&Singleton::init);
         assert(value_!=NULL);
         return *value_;
     }
