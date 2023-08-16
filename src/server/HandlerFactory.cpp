@@ -33,7 +33,7 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             Singleton<LoginManager>::getInstance().token_verification_middleware(req, res);
         };
     }
-    else if (handler.url == "/files/Dirlists")
+    else if (handler.url == "/files/ListFiles")
     {
         handler_info.handler_function = [handler](const httplib::Request &req, httplib::Response &res)
         {
