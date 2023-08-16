@@ -1,6 +1,5 @@
 #include "HandlerFactory.h"
 #include "LoginManager.h"
-#include "FileManageRequest.h"
 #include "FileTransmission.h"
 #include "../base/Singleton.h"
 #include "../base/Logger.h"
@@ -34,6 +33,14 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             Singleton<LoginManager>::getInstance().token_verification_middleware(req, res);
         };
     }
+    else if (handler.url == "/files/Dirlists")
+    {
+        handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
+        {
+            FileManager().handleListFiles(req, res);
+            return true; // or false, depending on the result
+        };
+    }
     else
     {
         handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
@@ -41,11 +48,6 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             res.status = 404;
         };
     }
-    // } else if (handler.url == "/files/Dir") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
     // } else if (handler.url == "/files/upload/FixedFile") {
     //     return [](const httplib::Request& req, httplib::Response& res) {
     //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);

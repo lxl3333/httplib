@@ -15,9 +15,9 @@
   "keepaliveLimit": 5,
   "handler": [
     {
-      "url": "/files/Dir",
+      "url": "/files/Dirlists",
       "method": "GET",
-      "handler": "getDir",
+      "handler": "getDirlists",
       "dir": "/var/ftp/files"
     },
     {

@@ -5,6 +5,7 @@
 #include <memory>
 #include "../include/httplib.h"
 #include "../base/Config.h"
+#include "FileManageRequest.h"
 
 class LoginManager;
 class FileTransmission;
