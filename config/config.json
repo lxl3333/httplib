@@ -1,80 +1,93 @@
 {
-    "address":"0.0.0.0",
-    "runUser":"root",
-    "credential":[
-      { 
-        "username":"lxl",
-        "password":"000000"
-      },
-      {
-        "username":"root",
-        "password":"000000"
-      }
-    ],
-    "concurrencyLimit":3,
-    "keepaliveLimit":5,
-    "handler": [
-        {
-          "url": "/files/Dir",
-          "handler": "getDir",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/upload/FixedFile",
-          "handler": "uploadFixedFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/upload/ChunkedFile",
-          "handler": "uploadChunkedFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/download/FixedFile",
-          "handler": "downloadFixedFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/download/ChunkedFile",
-          "handler": "downloadChunkedFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/delete",
-          "handler": "deleteFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/create-directory",
-          "handler": "createDirectory",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/rename",
-          "handler": "renameFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/move",
-          "handler": "moveFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/files/copy",
-          "handler": "copyFile",
-          "dir": "/var/ftp/files"
-        },
-        {
-          "url": "/auth/login",
-          "handler": "login"
-        },
-        {
-          "url": "/auth/verify_token",
-          "handler": "verify_token"
-        },
-        {
-          "url": "/auth/logout",
-          "handler": "logout"
-        }
-    ]
+  "address": "0.0.0.0",
+  "runUser": "root",
+  "credential": [
+    {
+      "username": "lxl",
+      "password": "000000"
+    },
+    {
+      "username": "root",
+      "password": "000000"
+    }
+  ],
+  "concurrencyLimit": 3,
+  "keepaliveLimit": 5,
+  "handler": [
+    {
+      "url": "/files/Dir",
+      "method": "GET",
+      "handler": "getDir",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/upload/FixedFile",
+      "method": "POST",
+      "handler": "uploadFixedFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/upload/ChunkedFile",
+      "method": "POST",
+      "handler": "uploadChunkedFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/download/FixedFile",
+      "method": "GET",
+      "handler": "downloadFixedFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/download/ChunkedFile",
+      "method": "GET",
+      "handler": "downloadChunkedFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/delete",
+      "method": "DELETE",
+      "handler": "deleteFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/create-directory",
+      "method": "POST",
+      "handler": "createDirectory",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/rename",
+      "method": "PUT",
+      "handler": "renameFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/move",
+      "method": "PUT",
+      "handler": "moveFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/files/copy",
+      "method": "POST",
+      "handler": "copyFile",
+      "dir": "/var/ftp/files"
+    },
+    {
+      "url": "/auth/login",
+      "method": "POST",
+      "handler": "login"
+    },
+    {
+      "url": "/auth/verify_token",
+      "method": "POST",
+      "handler": "verify_token"
+    },
+    {
+      "url": "/auth/logout",
+      "method": "POST",
+      "handler": "logout"
+    }
+  ]
 }

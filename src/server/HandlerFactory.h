@@ -6,14 +6,29 @@
 #include "../include/httplib.h"
 #include "../base/Config.h"
 
-
 class LoginManager;
 class FileTransmission;
 class FileManageRequest;
 
-class HandlerFactory {
-public:
-    static std::function<void(const httplib::Request&, httplib::Response&)> createHandler(const Config::Handler& handler);
+enum class HttpMethod
+{
+    GET,
+    POST,
+    PUT,
+    DELETE
+    // 可以继续添加其他HTTP请求方法
 };
 
-#endif  // HANDLER_FACTORY_H
+struct HandlerInfo
+{
+    std::function<void(const httplib::Request &, httplib::Response &)> handler_function;
+    std::string http_method;
+};
+
+class HandlerFactory
+{
+public:
+    static HandlerInfo createHandler(const Config::Handler &handler);
+};
+
+#endif // HANDLER_FACTORY_H
