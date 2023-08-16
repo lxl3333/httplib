@@ -17,6 +17,7 @@ public:
     bool FileExists(const std::string &filename) const;
     bool isDirectory(const std::string &path) const;
     bool listFiles(const std::string &path, std::vector<std::pair<std::string, bool>> &files) const;
+    std::string getParentDirectory(const std::string &path) const;
     bool CreateDirectory(const std::string &dirname) const;
     bool CreateFile(const std::string &filename) const;
     bool CopyFile(const std::string &srcFilename, const std::string &destFilename) const;

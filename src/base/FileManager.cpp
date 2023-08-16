@@ -142,3 +142,16 @@ bool FileManager::listFiles(const std::string &path, std::vector<std::pair<std::
         return false;
     }
 }
+
+std::string FileManager::getParentDirectory(const std::string &path) const
+{
+    fs::path fsPath(path);
+    fs::path parentPath = fsPath.parent_path();
+
+    if (parentPath != fs::path()) // Check if it's not the root directory
+    {
+        return parentPath.string();
+    }
+
+    return ""; // Return empty string if it's the root directory
+}

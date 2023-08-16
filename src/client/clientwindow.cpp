@@ -8,17 +8,6 @@
 #include <QMessageBox>
 #include <QDir>
 
-#include <stdio.h>
-#include <dirent.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <iostream>
-
 ClientWindow::ClientWindow(QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech"))
 
@@ -29,6 +18,7 @@ ClientWindow::ClientWindow(QWidget *parent)
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
     connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
+    connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     strcpy(clientdir, ".");
     LOG_Debug("界面初始化");
     show_clientdir();
@@ -96,22 +86,31 @@ void ClientWindow::on_connect_clicked()
     ui->connect->setText("断开");
 }
 
-void ClientWindow::show_clientdir()
+void ClientWindow::show_clientdir(const QString &path = "")
 {
     ui->clientdir->clear(); // 清空clientdir
 
-    char cur_dir[1024];
-    if (getcwd(cur_dir, sizeof(cur_dir) - 1) == nullptr)
+    QString currentPathQString;
+
+    if (path.isEmpty())
     {
-        qDebug("获取当前路径失败");
-        return;
+        // 使用程序执行路径作为默认路径
+        fs::path currentPath = fs::current_path();
+        std::string currentPathStr = currentPath.string();
+
+        QTextCodec *codec = QTextCodec::codecForName("UTF-8"); // 使用适当的编码
+        currentPathQString = codec->toUnicode(currentPathStr.c_str());
+    }
+    else
+    {
+        currentPathQString = path;
     }
 
-    qDebug("%s", cur_dir);
-    ui->clientdir->setText(cur_dir); // 设置clientdir的text
+    // 将当前路径设置为 clientdir 的文本
+    ui->clientdir->setText(currentPathQString);
 
     std::vector<std::pair<std::string, bool>> files;
-    if (filemanager_->listFiles(cur_dir, files))
+    if (filemanager_->listFiles(currentPathQString.toStdString(), files))
     {
         ui->listWidget_c->clear(); // 清空listWidget_c
 
@@ -216,5 +215,20 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
             // Update the clientdir text
             ui->clientdir->setText(clickedPath);
         }
+    }
+}
+
+void ClientWindow::goToParentDirectory()
+{
+    QString currentPath = ui->clientdir->text();
+    QString parentPath = fileManager_.getParentDirectory(currentPath.toStdString());
+
+    if (!parentPath.isEmpty())
+    {
+        show_clientdir(parentPath); // 使用上一级目录路径来更新文件列表和当前目录显示
+    }
+    else
+    {
+        qDebug("已经在根目录，无法返回上一层");
     }
 }
