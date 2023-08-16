@@ -115,23 +115,31 @@ void ClientWindow::show_clientdir()
     {
         ui->listWidget_c->clear(); // 清空listWidget_c
 
+        // 添加上一级目录的项目
+        QListWidgetItem *parentItem = new QListWidgetItem("[上一级]");
+        QIcon parentIcon(":/icon/parent.png");
+        parentItem->setIcon(parentIcon);
+        ui->listWidget_c->addItem(parentItem);
+
         for (const auto &item : files)
         {
             const std::string &fileName = item.first;
             bool isDirectory = item.second;
 
             QString itemText = QString::fromStdString(fileName);
-            std::string img=":/icon/";
+            std::string img = ":/icon/";
 
             if (isDirectory)
             {
-                img+="dir.png";
+                img += "dir.png";
             }
-            else img+="file.png";
-                    
-            QIcon icon(QString::fromStdString(img));
+            else
+            {
+                img += "file.png";
+            }
 
-            QListWidgetItem *listItem = new QListWidgetItem(icon,itemText);
+            QIcon icon(QString::fromStdString(img));
+            QListWidgetItem *listItem = new QListWidgetItem(icon, itemText);
             ui->listWidget_c->addItem(listItem); // 添加字段
         }
     }
@@ -139,7 +147,6 @@ void ClientWindow::show_clientdir()
     {
         qDebug("获取文件列表失败");
     }
-
 }
 
 void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
@@ -147,48 +154,67 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
     QString clickedItemText = item->text();
 
     // Check if the clicked item is a folder
-    if (clickedItemText.endsWith(" [Dir]"))
+    if (!clickedItemText.isEmpty())
     {
-        QString folderName = clickedItemText; // Remove " [Dir]"
-        QString currentPath = ui->clientdir->text();                             // Get current path
+        QString folderName = clickedItemText;
+        QString currentPath = ui->clientdir->text();
 
-        // Construct the full path of the clicked folder
-        QString folderPath = currentPath + QDir::separator() + folderName.toStdString().c_str();
-
-        // Clear listWidget_c
-        ui->listWidget_c->clear();
-
-        // List files in the clicked folder
-        std::vector<std::pair<std::string, bool>> files;
-        if (filemanager_->listFiles(folderPath.toStdString(), files))
+        if (folderName == "[上一级]") // Handle going to parent directory
         {
-            for (const auto &file : files)
+            QString parentPath = filemanager_->getParentDirectory(currentPath.toStdString().c_str());
+            if (!parentPath.isEmpty())
             {
-                QString fileName = QString::fromStdString(file.first);
-                bool isDirectory = file.second;
-
-                QString displayText = fileName;
-
-                std::string img=":/icon/";
-
-                if (isDirectory)
-                {
-                    img+="dir.png";
-                }
-                else img+="file.png";
-                        
-                QIcon icon(QString::fromStdString(img));
-
-                QListWidgetItem *newItem = new QListWidgetItem(icon,displayText);
-                ui->listWidget_c->addItem(newItem);
+                ui->clientdir->setText(parentPath);
+                show_clientdir();
             }
-        }
-        else
-        {
-            qDebug("获取文件列表失败");
+            else
+            {
+                qDebug("无法获取上一级目录");
+            }
+            return;
         }
 
-        // Update the clientdir text
-        ui->clientdir->setText(folderPath);
+        // Construct the full path of the clicked item
+        QString clickedPath = currentPath + QDir::separator() + folderName;
+
+        if (filemanager_->isDirectory(clickedPath.toStdString())) // Check if it's a directory
+        {
+            // Clear listWidget_c
+            ui->listWidget_c->clear();
+
+            // List files in the clicked folder
+            std::vector<std::pair<std::string, bool>> files;
+            if (filemanager_->listFiles(clickedPath.toStdString(), files))
+            {
+                for (const auto &file : files)
+                {
+                    QString fileName = QString::fromStdString(file.first);
+                    bool isDirectory = file.second;
+
+                    QString displayText = fileName;
+
+                    std::string img = ":/icon/";
+
+                    if (isDirectory)
+                    {
+                        img += "dir.png";
+                    }
+                    else
+                        img += "file.png";
+
+                    QIcon icon(QString::fromStdString(img));
+
+                    QListWidgetItem *newItem = new QListWidgetItem(icon, displayText);
+                    ui->listWidget_c->addItem(newItem);
+                }
+            }
+            else
+            {
+                qDebug("获取文件列表失败");
+            }
+
+            // Update the clientdir text
+            ui->clientdir->setText(clickedPath);
+        }
     }
 }
