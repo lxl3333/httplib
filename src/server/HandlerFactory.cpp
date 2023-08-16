@@ -35,9 +35,9 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
     }
     else if (handler.url == "/files/Dirlists")
     {
-        handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
+        handler_info.handler_function = [handler](const httplib::Request &req, httplib::Response &res)
         {
-            FileManager().handleListFiles(req, res);
+            FileManager(handler.dir).handleListFiles(req, res);
             return true; // or false, depending on the result
         };
     }
