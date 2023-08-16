@@ -37,7 +37,7 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
     {
         handler_info.handler_function = [handler](const httplib::Request &req, httplib::Response &res)
         {
-            FileManager(handler.dir).handleListFiles(req, res);
+            FileManageRequest(handler.dir).handleListFiles(req, res);
             return true; // or false, depending on the result
         };
     }
