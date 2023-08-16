@@ -6,6 +6,8 @@
 
 #include <QPalette>
 #include <QMessageBox>
+#include <QDir>
+
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
@@ -18,7 +20,7 @@
 #include <iostream>
 
 ClientWindow::ClientWindow(QWidget *parent)
-    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr)
+    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr),filemanager_(std::make_unique<FileManager>("/home/scutech"))
 
 {
     ui->setupUi(this);
@@ -109,7 +111,7 @@ void ClientWindow::show_clientdir()
     ui->clientdir->setText(cur_dir); // 设置clientdir的text
 
     std::vector<std::pair<std::string, bool>> files;
-    if (fileManager_.listFiles(cur_dir, files))
+    if (filemanager_->listFiles(cur_dir, files))
     {
         ui->listWidget_c->clear(); // 清空listWidget_c
 
@@ -153,7 +155,7 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 
         // List files in the clicked folder
         std::vector<std::pair<std::string, bool>> files;
-        if (fileManager_.listFiles(folderPath.toStdString(), files))
+        if (filemanager_->listFiles(folderPath.toStdString(), files))
         {
             for (const auto &file : files)
             {
