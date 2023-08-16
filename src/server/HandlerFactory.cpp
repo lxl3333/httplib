@@ -5,7 +5,7 @@
 #include "../base/Singleton.h"
 #include "../base/Logger.h"
 
-std::function<void(const httplib::Request &, httplib::Response &)> HandlerFactory::createHandler(const Config::Handler &handler)
+HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
 {
     LOG_Debug(handler.url + " " + handler.type + " " + handler.method);
 
