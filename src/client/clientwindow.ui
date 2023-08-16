@@ -227,7 +227,7 @@
           </font>
          </property>
          <property name="text">
-          <string>test</string>
+          <string>root</string>
          </property>
         </widget>
        </item>
@@ -281,7 +281,7 @@
           </font>
          </property>
          <property name="text">
-          <string>123</string>
+          <string>000000</string>
          </property>
          <property name="echoMode">
           <enum>QLineEdit::Password</enum>

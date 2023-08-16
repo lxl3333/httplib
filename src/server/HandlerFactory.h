@@ -22,7 +22,7 @@ enum class HttpMethod
 struct HandlerInfo
 {
     std::function<void(const httplib::Request &, httplib::Response &)> handler_function;
-    std::string http_method;
+    HttpMethod http_method;
 };
 
 class HandlerFactory

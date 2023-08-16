@@ -17,7 +17,7 @@ class ClientWindow : public QWidget
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
-
+    void show_clientdir();  // 显示客户端目录
 private slots:
     void on_connect_clicked();
 
@@ -25,5 +25,7 @@ private:
     Ui::ClientWindow *ui;
     std::shared_ptr<httplib::Client> client_;
     std::unique_ptr<CLoginManager> cloginmanager_;
+    char clientdir[256];    // 客户端路径
+    QString client_filename[1024];  // 客户端获取到的文件名
 };
 #endif // CLIENTWINDOW_H

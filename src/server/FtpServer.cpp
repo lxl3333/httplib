@@ -85,12 +85,6 @@ void FtpServer::configureServer(httplib::Server &server)
     const std::vector<Config::Handler> &Handlers = config_.handlers();
     for (const auto &Handler : Handlers)
     {
-        auto handler = handlerFactory.createHandler(Handler);
-        server.Post(Handler.url, handler);
-    }
-    const std::vector<Config::Handler> &Handlers = config_.handlers();
-    for (const auto &Handler : Handlers)
-    {
         HandlerInfo handler_info = handlerFactory.createHandler(Handler);
 
         if (handler_info.http_method == HttpMethod::GET)

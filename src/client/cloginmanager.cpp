@@ -31,12 +31,14 @@ bool CLoginManager::Login(const std::string username, const std::string password
 }
 
 bool CLoginManager::Logout() {
+    LOG_Info("ClognManager::logout");
+
     if (!loggedIn_) {
         return true;  // Already logged out
     }
     httplib::Headers headers = {{"Authorization", token_}};
 
-    auto res = client_->Get("/auth/logout", headers);
+    auto res = client_->Post("/auth/logout", headers);
 
     if (res && res->status == 200) {
         loggedIn_ = false;
