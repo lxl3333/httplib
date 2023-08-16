@@ -5,9 +5,11 @@
 #include "../include/httplib.h"
 #include <QWidget>
 
-
 QT_BEGIN_NAMESPACE
-namespace Ui { class ClientWindow; }
+namespace Ui
+{
+    class ClientWindow;
+}
 QT_END_NAMESPACE
 
 class ClientWindow : public QWidget
@@ -17,15 +19,19 @@ class ClientWindow : public QWidget
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
-    void show_clientdir();  // 显示客户端目录
+    void show_clientdir(); // 显示客户端目录
+
 private slots:
     void on_connect_clicked();
+
+public slots:
+    void onFolderItemClicked(QListWidgetItem *item);
 
 private:
     Ui::ClientWindow *ui;
     std::shared_ptr<httplib::Client> client_;
     std::unique_ptr<CLoginManager> cloginmanager_;
-    char clientdir[256];    // 客户端路径
-    QString client_filename[1024];  // 客户端获取到的文件名
+    char clientdir[256];           // 客户端路径
+    QString client_filename[1024]; // 客户端获取到的文件名
 };
 #endif // CLIENTWINDOW_H

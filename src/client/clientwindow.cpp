@@ -18,18 +18,16 @@
 #include <iostream>
 
 ClientWindow::ClientWindow(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::ClientWindow)
-    ,client_(nullptr)
-    ,cloginmanager_(nullptr)
+    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr)
 
 {
     ui->setupUi(this);
     QPalette pal = this->palette(); // 设置背景图片
-    pal.setBrush(QPalette::Window,QBrush(QPixmap(":/icon/bg.png")));
+    pal.setBrush(QPalette::Window, QBrush(QPixmap(":/icon/bg.png")));
     setPalette(pal);
-    //Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
-    strcpy(clientdir,".");
+    // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
+    connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
+    strcpy(clientdir, ".");
     LOG_Debug("界面初始化");
     show_clientdir();
 }
@@ -39,12 +37,11 @@ ClientWindow::~ClientWindow()
     delete ui;
 }
 
-
 void ClientWindow::on_connect_clicked()
 {
     QString _connect = ui->connect->text();
-    LOG_Debug("开始"+_connect.toStdString());
-    if(_connect != "连接")
+    LOG_Debug("开始" + _connect.toStdString());
+    if (_connect != "连接")
     {
         LOG_Debug("ClognManager::logout");
         cloginmanager_->Logout();
@@ -55,77 +52,130 @@ void ClientWindow::on_connect_clicked()
         return;
     }
 
-    QString _ip = ui->ip->text();   // 获取控件的text
+    QString _ip = ui->ip->text(); // 获取控件的text
     QString _port = ui->port->text();
-    QString _username = ui->username->text();   // 获取控件的text
+    QString _username = ui->username->text(); // 获取控件的text
     QString _password = ui->password->text();
 
     std::string ip = _ip.toStdString();
     int port = _port.toInt();
 
-    LOG_Debug(ip+" "+_port.toStdString());
-    client_=std::make_shared<httplib::Client>(ip,port);  // 连接
-    cloginmanager_ =std::make_unique<CLoginManager>(client_);
+    LOG_Debug(ip + " " + _port.toStdString());
+    client_ = std::make_shared<httplib::Client>(ip, port); // 连接
+    cloginmanager_ = std::make_unique<CLoginManager>(client_);
     LOG_Debug("httplib::client创建客户端");
-    if (!client_) {
+    if (!client_)
+    {
         qDebug("client is null!");
         return;
     }
 
     auto response = client_->Get("/");
-    if(!response){
+    if (!response)
+    {
         LOG_Debug("client connect failed!");
-        return ;
+        return;
     }
-    if (response->status != 200) {
+    if (response->status != 200)
+    {
         LOG_Debug("server didn't esit!");
         return;
     }
     LOG_Debug("服务器存在");
-    if(cloginmanager_->Login(_username.toStdString(),_password.toStdString())){
+    if (cloginmanager_->Login(_username.toStdString(), _password.toStdString()))
+    {
         LOG_Debug("创建登陆成功");
-    }else{
-        QMessageBox::critical(nullptr,"登陆失败","用户名或秘密错误，请重试！");
-        return ;
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, "登陆失败", "用户名或秘密错误，请重试！");
+        return;
     }
     ui->connect->setText("断开");
 }
 
-// 显示客户端的所有文件
 void ClientWindow::show_clientdir()
 {
     ui->clientdir->clear(); // 清空clientdir
+
     char cur_dir[1024];
-    char* temp = getcwd(cur_dir, sizeof(cur_dir)-1); // 获取当前路径
-    if(temp == NULL)
+    if (getcwd(cur_dir, sizeof(cur_dir) - 1) == nullptr)
     {
         qDebug("获取当前路径失败");
+        return;
     }
 
-    qDebug("%s",cur_dir);
-    ui->clientdir->setText(cur_dir);    // 设置clientdir的text
+    qDebug("%s", cur_dir);
+    ui->clientdir->setText(cur_dir); // 设置clientdir的text
 
-
-    int i = 0;
-    DIR* dp = opendir(clientdir);
-    for(struct dirent* file = readdir(dp); file!=NULL; file = readdir(dp))
+    std::vector<std::pair<std::string, bool>> files;
+    if (fileManager_.listFiles(cur_dir, files))
     {
-        client_filename[i++] = file->d_name;
+        ui->listWidget_c->clear(); // 清空listWidget_c
 
-        char img[256] = {};
-
-        strcpy(img,":/icon/");
-        if(file->d_type == DT_DIR)  // 判断是否是目录文件
+        for (const auto &item : files)
         {
-            strcat(img,"dir.png");
-            //qDebug("dir");
+            const std::string &fileName = item.first;
+            bool isDirectory = item.second;
+
+            QString itemText = QString::fromStdString(fileName);
+
+            if (isDirectory)
+            {
+                itemText += " [Dir]";
+            }
+
+            QListWidgetItem *listItem = new QListWidgetItem(itemText);
+            ui->listWidget_c->addItem(listItem); // 添加字段
+        }
+    }
+    else
+    {
+        qDebug("获取文件列表失败");
+    }
+}
+
+void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
+{
+    QString clickedItemText = item->text();
+
+    // Check if the clicked item is a folder
+    if (clickedItemText.endsWith(" [Dir]"))
+    {
+        QString folderName = clickedItemText.left(clickedItemText.length() - 6); // Remove " [Dir]"
+        QString currentPath = ui->clientdir->text();                             // Get current path
+
+        // Construct the full path of the clicked folder
+        QString folderPath = currentPath + QDir::separator() + folderName.toStdString().c_str();
+
+        // Clear listWidget_c
+        ui->listWidget_c->clear();
+
+        // List files in the clicked folder
+        std::vector<std::pair<std::string, bool>> files;
+        if (fileManager_.listFiles(folderPath.toStdString(), files))
+        {
+            for (const auto &file : files)
+            {
+                QString fileName = QString::fromStdString(file.first);
+                bool isDirectory = file.second;
+
+                QString displayText = fileName;
+                if (isDirectory)
+                {
+                    displayText += " [Dir]";
+                }
+
+                QListWidgetItem *newItem = new QListWidgetItem(displayText);
+                ui->listWidget_c->addItem(newItem);
+            }
         }
         else
         {
-            strcat(img,"file.png");
+            qDebug("获取文件列表失败");
         }
-        QIcon icon(img);
-        QListWidgetItem* item = new QListWidgetItem(icon,file->d_name);
-        ui->listWidget_c->addItem(item);    // 添加字段
+
+        // Update the clientdir text
+        ui->clientdir->setText(folderPath);
     }
 }
