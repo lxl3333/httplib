@@ -3,8 +3,10 @@
 #include "FileManageRequest.h"
 #include "FileTransmission.h"
 #include "../base/Singleton.h"
+#include "../base/Logger.h"
 
 std::function<void(const httplib::Request&, httplib::Response&)> HandlerFactory::createHandler(const Config::Handler& handler) {
+    LOG_Debug(handler.url+" "+handler.type);
     if (handler.url == "/auth/login") {
         return [](const httplib::Request& req, httplib::Response& res) {
             Singleton<LoginManager>::getInstance().handle_login_request(req,res);

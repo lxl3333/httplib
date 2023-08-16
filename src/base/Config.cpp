@@ -20,6 +20,12 @@ Config::Config(const std::string& filename) {
         std::string dir = handler.get("dir", "").asString();
         handlers_.push_back({url, type, dir});
     }
+    auto credentials=root["credential"];
+    for(auto & credential:credentials){
+        std::string username=credential.get("username","").asString();
+        std::string password=credential.get("password","").asString();
+        credentials_.push_back({username,password});
+    }
 }
 
 const std::string& Config::address() const {
@@ -40,4 +46,8 @@ int Config::keepalive_limit() const {
 
 const std::vector<Config::Handler>& Config::handlers() const {
     return handlers_;
+}
+
+const std::vector<Config::Credential>& Config::credentials() const {
+    return credentials_;
 }

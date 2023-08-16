@@ -8,4 +8,7 @@ set(
 )
 
 add_library(server ${server_SRCS})
-target_link_libraries(server base crypto)
+target_link_libraries(server base crypto pthread)
+
+add_executable(Server main.cpp)
+target_link_libraries(Server server pthread)

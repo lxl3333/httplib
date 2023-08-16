@@ -8,7 +8,7 @@ class CLoginManager {
 public:
     CLoginManager(std::shared_ptr<httplib::Client> client);
 
-    bool Login(const std::string& username, const std::string& password);
+    bool Login(const std::string username, const std::string password);
     bool Logout();
     bool IsLoggedIn() const;
     std::string GetCurrentUser() const;

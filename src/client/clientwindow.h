@@ -3,7 +3,6 @@
 
 #include "cloginmanager.h"
 #include "../include/httplib.h"
-
 #include <QWidget>
 
 

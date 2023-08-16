@@ -1,5 +1,4 @@
 #include"Logger.h"
-
 Logger::Logger(std::ostream& log_stream)
     :log_stream_(log_stream)
 {
@@ -36,3 +35,5 @@ void Logger::Warning(std::string message){
 void Logger::Error(std::string message){
     Log(LogLevel::ERROR,message);
 }
+
+

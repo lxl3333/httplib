@@ -1,6 +1,16 @@
 {
-    "address":"localhost:8080",
+    "address":"0.0.0.0",
     "runUser":"root",
+    "credential":[
+      { 
+        "username":"lxl",
+        "password":"000000"
+      },
+      {
+        "username":"root",
+        "password":"000000"
+      }
+    ],
     "concurrencyLimit":3,
     "keepaliveLimit":5,
     "handler": [

@@ -9,8 +9,7 @@
 #include "../base/Config.h"
 #include "HandlerFactory.h"
 #include "../include/httplib.h"
-#include "../base/Logger.h"
-#include "../base/Singleton.h"
+
 class FtpServer {
 public:
     FtpServer(std::string path);
