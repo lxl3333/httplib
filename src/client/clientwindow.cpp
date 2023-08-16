@@ -20,7 +20,7 @@
 #include <iostream>
 
 ClientWindow::ClientWindow(QWidget *parent)
-    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr),filemanager_(std::make_unique<FileManager>("/home/scutech"))
+    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech"))
 
 {
     ui->setupUi(this);
@@ -111,7 +111,7 @@ void ClientWindow::show_clientdir()
     ui->clientdir->setText(cur_dir); // 设置clientdir的text
 
     std::vector<std::pair<std::string, bool>> files;
-    if (filemanager_->listFiles(cur_dir, files))
+    if (fileManager_.listFiles(cur_dir, files))
     {
         ui->listWidget_c->clear(); // 清空listWidget_c
 
@@ -134,6 +134,30 @@ void ClientWindow::show_clientdir()
     else
     {
         qDebug("获取文件列表失败");
+    }
+
+    // 显示之前的文件列表
+    int i = 0;
+    DIR *dp = opendir(clientdir);
+    for (struct dirent *file = readdir(dp); file != NULL; file = readdir(dp))
+    {
+        client_filename[i++] = file->d_name;
+
+        char img[256] = {};
+
+        strcpy(img, ":/icon/");
+        if (file->d_type == DT_DIR) // 判断是否是目录文件
+        {
+            strcat(img, "dir.png");
+            // qDebug("dir");
+        }
+        else
+        {
+            strcat(img, "file.png");
+        }
+        QIcon icon(img);
+        QListWidgetItem *item = new QListWidgetItem(icon, file->d_name);
+        ui->listWidget_c->addItem(item); // 添加字段
     }
 }
 
