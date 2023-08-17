@@ -16,7 +16,7 @@ public:
     bool moveRemoteFile(const std::string &filename, const std::string &newpath);
     bool copyRemoteFile(const std::string &filename, const std::string &targetpath);
     bool removeRemoteFile(const std::string &filename);
-    bool listRemoteFiles(const std::string &remotePath,std::string& token,std::vector<std::pair<std::string, bool>> &files);
+    bool listRemoteFiles(const std::string &remotePath,std::string token,std::vector<std::pair<std::string, bool>> &files);
 
 private:
     std::shared_ptr<httplib::Client> client_;

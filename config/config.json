@@ -18,7 +18,7 @@
       "url": "/files/ListFiles",
       "method": "POST",
       "handler": "getListFiles",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/upload/FixedFile",

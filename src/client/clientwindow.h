@@ -22,7 +22,7 @@ public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
     void show_clientdir(const QString path= ""); // 显示客户端目录
-    void show_serverdir(const QString path,std::vector<std::pair<std::string, bool>> files);
+    void show_serverdir(const QString path);
 
 private slots:
     void on_connect_clicked();

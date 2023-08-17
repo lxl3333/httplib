@@ -35,7 +35,7 @@ bool RemoteFileManager::removeRemoteFile(const std::string &filename)
 //     // Implementation for listing files on server
 // }
 
-bool RemoteFileManager::listRemoteFiles(const std::string &remotePath ,std::string& token, std::vector<std::pair<std::string, bool>> &files)
+bool RemoteFileManager::listRemoteFiles(const std::string &remotePath ,std::string token, std::vector<std::pair<std::string, bool>> &files)
 {
     std::string requestPath = "/files/ListFiles"; // Assuming the server API endpoint is "/list_files"
 

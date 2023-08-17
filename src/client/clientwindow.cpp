@@ -9,7 +9,7 @@
 #include <QDir>
 
 ClientWindow::ClientWindow(QWidget *parent)
-    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech"))
+    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")),remotefilemanager_(nullptr)
 
 {
     ui->setupUi(this);
@@ -55,6 +55,7 @@ void ClientWindow::on_connect_clicked()
     LOG_Debug(ip + " " + _port.toStdString());
     client_ = std::make_shared<httplib::Client>(ip, port); // 连接
     cloginmanager_ = std::make_unique<CLoginManager>(client_);
+    remotefilemanager_=std::make_unique<RemoteFileManager>(client_);
     LOG_Debug("httplib::client创建客户端");
     if (!client_)
     {
@@ -77,6 +78,8 @@ void ClientWindow::on_connect_clicked()
     if (cloginmanager_->Login(_username.toStdString(), _password.toStdString()))
     {
         LOG_Debug("创建登陆成功");
+        QString path("/");
+        show_serverdir(path);
     }
     else
     {
@@ -200,20 +203,25 @@ void ClientWindow::goToParentDirectory()
 }
 
 
-void ClientWindow::show_serverdir(const QString path,std::vector<std::pair<std::string, bool>> files)
+void ClientWindow::show_serverdir(const QString path)
 {
-    ui->serverdir->clear(); // 清空clientdir
-
+    ui->serverdir->clear(); // 清空serverdir
+    LOG_Info("清空serverdir");
     // 将当前路径设置为 clientdir 的文本
     ui->serverdir->setText(path);
 
-    ui->listWidget_s->clear(); // 清空listWidget_c
+    ui->listWidget_s->clear(); // 清空listWidget_s
 
+    LOG_Info("清空listWidget_s");
     // 添加上一级目录的项目
     QListWidgetItem *parentItem = new QListWidgetItem("..");
     QIcon parentIcon(":/icon/parent.png");
     parentItem->setIcon(parentIcon);
     ui->listWidget_s->addItem(parentItem);
+    LOG_Info("添加上一级目录的项目");
+    std::vector<std::pair<std::string, bool>> files;
+
+    remotefilemanager_->listRemoteFiles(path.toStdString(),cloginmanager_->GetToken(),files);
 
     for (const auto &item : files)
     {
