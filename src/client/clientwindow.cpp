@@ -18,8 +18,8 @@ ClientWindow::ClientWindow(QWidget *parent)
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
     connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemClicked);
+    connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemClicked);
     //connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
-    strcpy(clientdir, ".");
     LOG_Debug("界面初始化");
     show_clientdir();
 }
@@ -223,6 +223,8 @@ void ClientWindow::show_serverdir(const QString path)
 
     remotefilemanager_->listRemoteFiles(path.toStdString(),cloginmanager_->GetToken(),files);
 
+    remotefiles=files;
+
     for (const auto &item : files)
     {
         const std::string &fileName = item.first;
@@ -243,5 +245,55 @@ void ClientWindow::show_serverdir(const QString path)
         QIcon icon(QString::fromStdString(img));
         QListWidgetItem *listItem = new QListWidgetItem(icon, itemText);
         ui->listWidget_s->addItem(listItem); // 添加字段
+    }
+}
+
+void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
+{
+    QString clickedItemText = item->text();
+
+    // Check if the clicked item is a folder
+    if (!clickedItemText.isEmpty())
+    {
+        QString folderName = clickedItemText;
+        QString currentPath = ui->serverdir->text();
+
+        if (folderName == "..") // Handle going to parent directory
+        {
+            LOG_Info("go to parentDirectory");
+            auto findparentdir=[](const std::string& remotePath) ->std::string {
+                std::string parentPath = remotePath;
+                size_t lastSlashPos = parentPath.find_last_of('/');
+                if (lastSlashPos != std::string::npos) {
+                    parentPath = parentPath.substr(0, lastSlashPos);
+                }
+                return parentPath;
+            };
+            QString parentPath=QString::fromStdString(findparentdir(currentPath.toStdString()));
+            if (!parentPath.isEmpty())
+            {
+                ui->serverdir->setText(parentPath);
+                show_serverdir(parentPath);
+            }
+            else
+            {
+                LOG_Debug("无法获取上一级目录");
+            }
+            return;
+        }
+
+        // Construct the full path of the clicked item
+        QString clickedPath = currentPath + QDir::separator() + folderName;
+
+        for(auto& item:remotefiles)
+        {
+            const std::string &fileName = item.first;
+            bool isDirectory = item.second;
+            if(fileName==folderName.toStdString()&&isDirectory)
+            {
+                show_serverdir(clickedPath);
+                break;
+            }
+        }
     }
 }

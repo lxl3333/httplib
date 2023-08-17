@@ -29,6 +29,7 @@ private slots:
 
 public slots:
     void onFolderItemClicked(QListWidgetItem *item);
+    void onsFolderItemClicked(QListWidgetItem *item);
     void goToParentDirectory();
 
 private:
@@ -37,7 +38,6 @@ private:
     std::unique_ptr<CLoginManager> cloginmanager_;
     std::unique_ptr<RemoteFileManager> remotefilemanager_;
     std::unique_ptr<FileManager> filemanager_;
-    char clientdir[256];           // 客户端路径
-    QString client_filename[1024]; // 客户端获取到的文件名
+    std::vector<std::pair<std::string, bool>> remotefiles;
 };
 #endif // CLIENTWINDOW_H
