@@ -2,6 +2,8 @@
 
 #include <jsoncpp/json/json.h>
 
+#include "../base/Logger.h"
+
 FileManageRequest::FileManageRequest(const std::string &rootPath) : fileManager_(rootPath) {}
 
 bool FileManageRequest::handleCreateDirectory(const httplib::Request &req, httplib::Response &res)
@@ -108,8 +110,10 @@ bool FileManageRequest::handleRemoveFile(const httplib::Request &req, httplib::R
 
 bool FileManageRequest::handleListFiles(const httplib::Request &req, httplib::Response &res)
 {
+
     std::string remotePath = req.get_param_value("path"); // Assuming you pass the remote path as a query parameter
 
+    LOG_Info("handleListFiles:"+remotePath);
     // Construct the full path using the rootPath and remotePath
     std::string fullPath = fileManager_.getRootPath() + remotePath;
 
