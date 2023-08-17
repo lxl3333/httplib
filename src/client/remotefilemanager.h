@@ -9,18 +9,17 @@
 class RemoteFileManager
 {
 public:
-    RemoteFileManager(const std::string &serverBaseUrl);
+    RemoteFileManager(std::shared_ptr<httplib::Client>& client);
 
     bool createRemoteDirectory(const std::string &dirname);
     bool renameRemoteFile(const std::string &filename, const std::string &newname);
     bool moveRemoteFile(const std::string &filename, const std::string &newpath);
     bool copyRemoteFile(const std::string &filename, const std::string &targetpath);
     bool removeRemoteFile(const std::string &filename);
-    bool listRemoteFiles(const std::string &remotePath, std::vector<std::pair<std::string, bool>> &files);
+    bool listRemoteFiles(const std::string &remotePath,std::string& token,std::vector<std::pair<std::string, bool>> &files);
 
 private:
-    std::string serverBaseUrl_;
-    httplib::Client client_;
+    std::shared_ptr<httplib::Client> client_;
 };
 
 #endif // REMOTEFILEMANAGER_H

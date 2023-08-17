@@ -16,7 +16,7 @@
   "handler": [
     {
       "url": "/files/ListFiles",
-      "method": "GET",
+      "method": "POST",
       "handler": "getListFiles",
       "dir": "/var/ftp/files"
     },

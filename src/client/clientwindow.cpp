@@ -198,3 +198,42 @@ void ClientWindow::goToParentDirectory()
         qDebug("已经在根目录，无法返回上一层");
     }
 }
+
+
+void ClientWindow::show_serverdir(const QString path,std::vector<std::pair<std::string, bool>> files)
+{
+    ui->serverdir->clear(); // 清空clientdir
+
+    // 将当前路径设置为 clientdir 的文本
+    ui->serverdir->setText(path);
+
+    ui->listWidget_s->clear(); // 清空listWidget_c
+
+    // 添加上一级目录的项目
+    QListWidgetItem *parentItem = new QListWidgetItem("..");
+    QIcon parentIcon(":/icon/parent.png");
+    parentItem->setIcon(parentIcon);
+    ui->listWidget_s->addItem(parentItem);
+
+    for (const auto &item : files)
+    {
+        const std::string &fileName = item.first;
+        bool isDirectory = item.second;
+
+        QString itemText = QString::fromStdString(fileName);
+        std::string img = ":/icon/";
+
+        if (isDirectory)
+        {
+            img += "dir.png";
+        }
+        else
+        {
+            img += "file.png";
+        }
+
+        QIcon icon(QString::fromStdString(img));
+        QListWidgetItem *listItem = new QListWidgetItem(icon, itemText);
+        ui->listWidget_s->addItem(listItem); // 添加字段
+    }
+}

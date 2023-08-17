@@ -12,7 +12,7 @@ public:
     bool Logout();
     bool IsLoggedIn() const;
     std::string GetCurrentUser() const;
-    std::string GetToken() const;
+    const std::string& GetToken() const;
 
 private:
     std::shared_ptr<httplib::Client> client_;

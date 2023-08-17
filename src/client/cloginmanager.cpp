@@ -58,6 +58,6 @@ std::string CLoginManager::GetCurrentUser() const {
     return username_;
 }
 
-std::string CLoginManager::GetToken() const {
+const std::string& CLoginManager::GetToken() const {
     return token_;
 }
