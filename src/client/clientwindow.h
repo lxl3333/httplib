@@ -20,7 +20,7 @@ class ClientWindow : public QWidget
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
-    void show_clientdir(const QString &path); // 显示客户端目录
+    void show_clientdir(const QString path= ""); // 显示客户端目录
 
 private slots:
     void on_connect_clicked();

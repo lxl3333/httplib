@@ -17,8 +17,8 @@ ClientWindow::ClientWindow(QWidget *parent)
     pal.setBrush(QPalette::Window, QBrush(QPixmap(":/icon/bg.png")));
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
-    connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
-    connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
+    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemClicked);
+    //connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     strcpy(clientdir, ".");
     LOG_Debug("界面初始化");
     show_clientdir();
@@ -86,7 +86,7 @@ void ClientWindow::on_connect_clicked()
     ui->connect->setText("断开");
 }
 
-void ClientWindow::show_clientdir(const QString &path = "")
+void ClientWindow::show_clientdir(const QString path )
 {
     ui->clientdir->clear(); // 清空clientdir
 
@@ -98,8 +98,7 @@ void ClientWindow::show_clientdir(const QString &path = "")
         fs::path currentPath = fs::current_path();
         std::string currentPathStr = currentPath.string();
 
-        QTextCodec *codec = QTextCodec::codecForName("UTF-8"); // 使用适当的编码
-        currentPathQString = codec->toUnicode(currentPathStr.c_str());
+        currentPathQString = QString::fromStdString(currentPathStr);
     }
     else
     {
@@ -115,7 +114,7 @@ void ClientWindow::show_clientdir(const QString &path = "")
         ui->listWidget_c->clear(); // 清空listWidget_c
 
         // 添加上一级目录的项目
-        QListWidgetItem *parentItem = new QListWidgetItem("[上一级]");
+        QListWidgetItem *parentItem = new QListWidgetItem("..");
         QIcon parentIcon(":/icon/parent.png");
         parentItem->setIcon(parentIcon);
         ui->listWidget_c->addItem(parentItem);
@@ -158,17 +157,18 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
         QString folderName = clickedItemText;
         QString currentPath = ui->clientdir->text();
 
-        if (folderName == "[上一级]") // Handle going to parent directory
+        if (folderName == "..") // Handle going to parent directory
         {
-            QString parentPath = filemanager_->getParentDirectory(currentPath.toStdString().c_str());
+            LOG_Info("go to parentDirectory");
+            QString parentPath = QString::fromStdString(filemanager_->getParentDirectory(currentPath.toStdString()));
             if (!parentPath.isEmpty())
             {
                 ui->clientdir->setText(parentPath);
-                show_clientdir();
+                show_clientdir(parentPath);
             }
             else
             {
-                qDebug("无法获取上一级目录");
+                LOG_Debug("无法获取上一级目录");
             }
             return;
         }
@@ -178,42 +178,8 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 
         if (filemanager_->isDirectory(clickedPath.toStdString())) // Check if it's a directory
         {
-            // Clear listWidget_c
-            ui->listWidget_c->clear();
-
-            // List files in the clicked folder
-            std::vector<std::pair<std::string, bool>> files;
-            if (filemanager_->listFiles(clickedPath.toStdString(), files))
-            {
-                for (const auto &file : files)
-                {
-                    QString fileName = QString::fromStdString(file.first);
-                    bool isDirectory = file.second;
-
-                    QString displayText = fileName;
-
-                    std::string img = ":/icon/";
-
-                    if (isDirectory)
-                    {
-                        img += "dir.png";
-                    }
-                    else
-                        img += "file.png";
-
-                    QIcon icon(QString::fromStdString(img));
-
-                    QListWidgetItem *newItem = new QListWidgetItem(icon, displayText);
-                    ui->listWidget_c->addItem(newItem);
-                }
-            }
-            else
-            {
-                qDebug("获取文件列表失败");
-            }
-
-            // Update the clientdir text
-            ui->clientdir->setText(clickedPath);
+            LOG_Info("go to childrenDirectory");
+            show_clientdir(clickedPath);
         }
     }
 }
@@ -221,7 +187,7 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 void ClientWindow::goToParentDirectory()
 {
     QString currentPath = ui->clientdir->text();
-    QString parentPath = fileManager_.getParentDirectory(currentPath.toStdString());
+    QString parentPath =QString::fromStdString(filemanager_->getParentDirectory(currentPath.toStdString()));
 
     if (!parentPath.isEmpty())
     {

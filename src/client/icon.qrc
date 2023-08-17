@@ -4,5 +4,6 @@
         <file>icon/dir.png</file>
         <file>icon/file.png</file>
         <file>icon/png.png</file>
+        <file>icon/parent.png</file>
     </qresource>
 </RCC>
