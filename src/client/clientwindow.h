@@ -34,9 +34,7 @@ public slots:
     void onsFolderItemLeftDoubleClicked(QListWidgetItem *item);
 
     void showContextMenu(const QPoint &pos);
-    void onFolderItemRightClicked(QListWidgetItem *item);
-    void onsFolderItemClicked(QListWidgetItem *item);
-    void onsFolderItemRightClicked(QListWidgetItem *item);
+    void showsContextMenu(const QPoint &pos);
 
     void goToParentDirectory();
 

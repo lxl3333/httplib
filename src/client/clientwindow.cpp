@@ -21,10 +21,14 @@ ClientWindow::ClientWindow(QWidget *parent)
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
     // connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
     connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemDoubleClicked);
+    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
+
+
     ui->listWidget_c->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget_c, &QListWidget::customContextMenuRequested, this, &ClientWindow::showContextMenu);
 
-    connect(ui->listWidget_s, &QListWidget::itemClicked, this, &ClientWindow::onsFolderItemClicked);
+    ui->listWidget_s->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->listWidget_s, &QListWidget::customContextMenuRequested, this, &ClientWindow::showsContextMenu);
     // connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     LOG_Debug("界面初始化");
     show_clientdir();
@@ -333,108 +337,9 @@ void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
     // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
-void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
-{
-    Qt::MouseButtons mouseButton = QApplication::mouseButtons();
 
-    if (mouseButton == Qt::LeftButton)
-    {
-        LOG_Info("RightButton");
-        onsFolderItemRightClicked(item);
-    }
-    // 其他鼠标双击逻辑
-    // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
-    // 调用原来的itemDoubleClicked信号处理逻辑
-    // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
-}
 
-void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item)
-{
-    QMenu contextMenu(this);
-    QAction *actionOpen = contextMenu.addAction("Open");
-    QAction *actionCut = contextMenu.addAction("Cut");
-    QAction *actionCopy = contextMenu.addAction("Copy");
-    QAction *actionPaste = contextMenu.addAction("Paste");
-    QAction *actionDelete = contextMenu.addAction("Delete");
 
-    // 在菜单中添加分隔线
-    contextMenu.addSeparator();
-
-    // 添加其他自定义功能
-    QAction *actionCustom = contextMenu.addAction("Custom Action");
-
-    // 显示上下文菜单并获取所选操作
-    QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
-    if (selectedAction == actionOpen)
-    {
-        // 打开文件的逻辑
-    }
-    else if (selectedAction == actionCut)
-    {
-        // 剪切文件的逻辑
-    }
-    else if (selectedAction == actionCopy)
-    {
-        // 复制文件的逻辑
-    }
-    else if (selectedAction == actionPaste)
-    {
-        // 粘贴文件的逻辑
-    }
-    else if (selectedAction == actionDelete)
-    {
-        // 删除文件的逻辑
-    }
-    else if (selectedAction == actionCustom)
-    {
-        // 处理自定义操作的逻辑
-    }
-}
-
-void ClientWindow::onsFolderItemRightClicked(QListWidgetItem *item)
-{
-    QMenu contextMenu(this);
-    QAction *actionOpen = contextMenu.addAction("Open");
-    QAction *actionCut = contextMenu.addAction("Cut");
-    QAction *actionCopy = contextMenu.addAction("Copy");
-    QAction *actionPaste = contextMenu.addAction("Paste");
-    QAction *actionDelete = contextMenu.addAction("Delete");
-
-    // 在菜单中添加分隔线
-    contextMenu.addSeparator();
-
-    // 添加其他自定义功能
-    QAction *actionCustom = contextMenu.addAction("Custom Action");
-
-    // 显示上下文菜单并获取所选操作
-    QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
-    if (selectedAction == actionOpen)
-    {
-        // 打开文件的逻辑
-    }
-    else if (selectedAction == actionCut)
-    {
-        // 剪切文件的逻辑
-    }
-    else if (selectedAction == actionCopy)
-    {
-        // 复制文件的逻辑
-    }
-    else if (selectedAction == actionPaste)
-    {
-        // 粘贴文件的逻辑
-    }
-    else if (selectedAction == actionDelete)
-    {
-        // 删除文件的逻辑
-    }
-    else if (selectedAction == actionCustom)
-    {
-        // 处理自定义操作的逻辑
-    }
-}
 
 void ClientWindow::showContextMenu(const QPoint &pos)
 {
@@ -442,9 +347,92 @@ void ClientWindow::showContextMenu(const QPoint &pos)
     if (item)
     {
         QMenu contextMenu(this);
-        QAction *rightClickAction = contextMenu.addAction("Right Click");
-        connect(rightClickAction, &QAction::triggered, this, [this, item]()
-                { onFolderItemRightClicked(item); });
-        contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
+        QAction *actionOpen = contextMenu.addAction("Open");
+        QAction *actionCut = contextMenu.addAction("Cut");
+        QAction *actionCopy = contextMenu.addAction("Copy");
+        QAction *actionPaste = contextMenu.addAction("Paste");
+        QAction *actionDelete = contextMenu.addAction("Delete");
+
+        // 在菜单中添加分隔线
+        contextMenu.addSeparator();
+
+        // 添加其他自定义功能
+        QAction *actionCustom = contextMenu.addAction("Custom Action");
+
+        // 显示上下文菜单并获取所选操作
+        QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
+        if (selectedAction == actionOpen)
+        {
+            // 打开文件的逻辑
+        }
+        else if (selectedAction == actionCut)
+        {
+            // 剪切文件的逻辑
+        }
+        else if (selectedAction == actionCopy)
+        {
+            // 复制文件的逻辑
+        }
+        else if (selectedAction == actionPaste)
+        {
+            // 粘贴文件的逻辑
+        }
+        else if (selectedAction == actionDelete)
+        {
+            // 删除文件的逻辑
+        }
+        else if (selectedAction == actionCustom)
+        {
+            // 处理自定义操作的逻辑
+        }
+    }
+}
+
+void ClientWindow::showsContextMenu(const QPoint &pos)
+{
+    QListWidgetItem *item = ui->listWidget_s->itemAt(pos);
+    if (item)
+    {
+        QMenu contextMenu(this);
+        QAction *actionOpen = contextMenu.addAction("Open");
+        QAction *actionCut = contextMenu.addAction("Cut");
+        QAction *actionCopy = contextMenu.addAction("Copy");
+        QAction *actionPaste = contextMenu.addAction("Paste");
+        QAction *actionDelete = contextMenu.addAction("Delete");
+
+        // 在菜单中添加分隔线
+        contextMenu.addSeparator();
+
+        // 添加其他自定义功能
+        QAction *actionCustom = contextMenu.addAction("Custom Action");
+
+        // 显示上下文菜单并获取所选操作
+        QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
+        if (selectedAction == actionOpen)
+        {
+            // 打开文件的逻辑
+        }
+        else if (selectedAction == actionCut)
+        {
+            // 剪切文件的逻辑
+        }
+        else if (selectedAction == actionCopy)
+        {
+            // 复制文件的逻辑
+        }
+        else if (selectedAction == actionPaste)
+        {
+            // 粘贴文件的逻辑
+        }
+        else if (selectedAction == actionDelete)
+        {
+            // 删除文件的逻辑
+        }
+        else if (selectedAction == actionCustom)
+        {
+            // 处理自定义操作的逻辑
+        }
     }
 }
