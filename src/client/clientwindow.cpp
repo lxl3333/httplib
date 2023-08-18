@@ -10,7 +10,6 @@
 #include <QMouseEvent>
 #include <QMenu>
 
-
 ClientWindow::ClientWindow(QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")), remotefilemanager_(nullptr)
 
@@ -20,8 +19,10 @@ ClientWindow::ClientWindow(QWidget *parent)
     pal.setBrush(QPalette::Window, QBrush(QPixmap(":/icon/bg.png")));
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
-    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
+    // connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
     connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemDoubleClicked);
+    ui->listWidget_c->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->listWidget_c, &QListWidget::customContextMenuRequested, this, &ClientWindow::showContextMenu);
 
     connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
     connect(ui->listWidget_s, &QListWidget::itemClicked, this, &ClientWindow::onsFolderItemClicked);
@@ -333,21 +334,6 @@ void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
     // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
-void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
-{
-    Qt::MouseButtons mouseButton = QApplication::mouseButtons();
-    onFolderItemRightClicked(item);
-    LOG_Info("ButtonClicked");
-    if (mouseButton == Qt::LeftButton)
-    {
-        LOG_Info("RightButton");  
-    }
-    // 其他鼠标双击逻辑
-    // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
-    // 调用原来的itemDoubleClicked信号处理逻辑
-    // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
-}
-
 void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
 {
     Qt::MouseButtons mouseButton = QApplication::mouseButtons();
@@ -363,7 +349,7 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
     // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
-void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item)
+void ClientWindow::showContextMenu(QListWidgetItem *item)
 {
     QMenu contextMenu(this);
     QAction *actionOpen = contextMenu.addAction("Open");

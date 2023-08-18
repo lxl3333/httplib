@@ -33,9 +33,7 @@ public slots:
     void onsFolderItemDoubleClicked(QListWidgetItem *item);
     void onsFolderItemLeftDoubleClicked(QListWidgetItem *item);
 
-
-    void onFolderItemClicked(QListWidgetItem *item);
-    void onFolderItemRightClicked(QListWidgetItem *item);
+    void showContextMenu(QListWidgetItem *item);
     void onsFolderItemClicked(QListWidgetItem *item);
     void onsFolderItemRightClicked(QListWidgetItem *item);
 
