@@ -24,7 +24,6 @@ ClientWindow::ClientWindow(QWidget *parent)
     ui->listWidget_c->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget_c, &QListWidget::customContextMenuRequested, this, &ClientWindow::showContextMenu);
 
-    connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
     connect(ui->listWidget_s, &QListWidget::itemClicked, this, &ClientWindow::onsFolderItemClicked);
     // connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     LOG_Debug("界面初始化");
