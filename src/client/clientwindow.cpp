@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QMouseEvent>
+#include <QMenu>
+
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")), remotefilemanager_(nullptr)
@@ -334,10 +336,11 @@ void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
 void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 {
     Qt::MouseButtons mouseButton = QApplication::mouseButtons();
-
+    onFolderItemRightClicked(item);
+    LOG_Info("ButtonClicked");
     if (mouseButton == Qt::LeftButton)
     {
-        onFolderItemRightClicked(item);
+        LOG_Info("RightButton");  
     }
     // 其他鼠标双击逻辑
     // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
@@ -351,6 +354,7 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
 
     if (mouseButton == Qt::LeftButton)
     {
+        LOG_Info("RightButton");
         onsFolderItemRightClicked(item);
     }
     // 其他鼠标双击逻辑
@@ -359,7 +363,7 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
     // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
-void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item, const QPoint &pos)
+void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item)
 {
     QMenu contextMenu(this);
     QAction *actionOpen = contextMenu.addAction("Open");
@@ -375,7 +379,7 @@ void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item, const QPoint 
     QAction *actionCustom = contextMenu.addAction("Custom Action");
 
     // 显示上下文菜单并获取所选操作
-    QAction *selectedAction = contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
+    QAction *selectedAction = contextMenu.exec(QCursor::pos());
 
     if (selectedAction == actionOpen)
     {
@@ -403,7 +407,7 @@ void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item, const QPoint 
     }
 }
 
-void ClientWindow::onsFolderItemRightClicked(QListWidgetItem *item, const QPoint &pos)
+void ClientWindow::onsFolderItemRightClicked(QListWidgetItem *item)
 {
     QMenu contextMenu(this);
     QAction *actionOpen = contextMenu.addAction("Open");
@@ -419,7 +423,7 @@ void ClientWindow::onsFolderItemRightClicked(QListWidgetItem *item, const QPoint
     QAction *actionCustom = contextMenu.addAction("Custom Action");
 
     // 显示上下文菜单并获取所选操作
-    QAction *selectedAction = contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
+    QAction *selectedAction = contextMenu.exec(QCursor::pos());
 
     if (selectedAction == actionOpen)
     {
