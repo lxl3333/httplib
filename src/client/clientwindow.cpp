@@ -305,61 +305,144 @@ void ClientWindow::onsFolderItemLeftDoubleClicked(QListWidgetItem *item)
 
 void ClientWindow::onFolderItemDoubleClicked(QListWidgetItem *item)
 {
-    Qt::MouseButtons mouseButton=QApplication::mouseButtons();
+    Qt::MouseButtons mouseButton = QApplication::mouseButtons();
 
-    if(mouseButton==Qt::LeftButton)
+    if (mouseButton == Qt::LeftButton)
     {
         onFolderItemLeftDoubleClicked(item);
     }
     // 其他鼠标双击逻辑
     // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
     // 调用原来的itemDoubleClicked信号处理逻辑
-    //else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
-
+    // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
 void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
 {
-    Qt::MouseButtons mouseButton=QApplication::mouseButtons();
+    Qt::MouseButtons mouseButton = QApplication::mouseButtons();
 
-    if(mouseButton==Qt::LeftButton)
+    if (mouseButton == Qt::LeftButton)
     {
         onsFolderItemLeftDoubleClicked(item);
     }
     // 其他鼠标双击逻辑
     // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
     // 调用原来的itemDoubleClicked信号处理逻辑
-    //else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
-
+    // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
-
 
 void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 {
-    Qt::MouseButtons mouseButton=QApplication::mouseButtons();
+    Qt::MouseButtons mouseButton = QApplication::mouseButtons();
 
-    if(mouseButton==Qt::LeftButton)
+    if (mouseButton == Qt::LeftButton)
     {
         onFolderItemRightClicked(item);
     }
     // 其他鼠标双击逻辑
     // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
     // 调用原来的itemDoubleClicked信号处理逻辑
-    //else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
-
+    // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
 void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
 {
-    Qt::MouseButtons mouseButton=QApplication::mouseButtons();
+    Qt::MouseButtons mouseButton = QApplication::mouseButtons();
 
-    if(mouseButton==Qt::LeftButton)
+    if (mouseButton == Qt::LeftButton)
     {
         onsFolderItemRightClicked(item);
     }
     // 其他鼠标双击逻辑
     // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
     // 调用原来的itemDoubleClicked信号处理逻辑
-    //else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
+    // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
+}
 
+void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item, const QPoint &pos)
+{
+    QMenu contextMenu(this);
+    QAction *actionOpen = contextMenu.addAction("Open");
+    QAction *actionCut = contextMenu.addAction("Cut");
+    QAction *actionCopy = contextMenu.addAction("Copy");
+    QAction *actionPaste = contextMenu.addAction("Paste");
+    QAction *actionDelete = contextMenu.addAction("Delete");
+
+    // 在菜单中添加分隔线
+    contextMenu.addSeparator();
+
+    // 添加其他自定义功能
+    QAction *actionCustom = contextMenu.addAction("Custom Action");
+
+    // 显示上下文菜单并获取所选操作
+    QAction *selectedAction = contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
+
+    if (selectedAction == actionOpen)
+    {
+        // 打开文件的逻辑
+    }
+    else if (selectedAction == actionCut)
+    {
+        // 剪切文件的逻辑
+    }
+    else if (selectedAction == actionCopy)
+    {
+        // 复制文件的逻辑
+    }
+    else if (selectedAction == actionPaste)
+    {
+        // 粘贴文件的逻辑
+    }
+    else if (selectedAction == actionDelete)
+    {
+        // 删除文件的逻辑
+    }
+    else if (selectedAction == actionCustom)
+    {
+        // 处理自定义操作的逻辑
+    }
+}
+
+void ClientWindow::onsFolderItemRightClicked(QListWidgetItem *item, const QPoint &pos)
+{
+    QMenu contextMenu(this);
+    QAction *actionOpen = contextMenu.addAction("Open");
+    QAction *actionCut = contextMenu.addAction("Cut");
+    QAction *actionCopy = contextMenu.addAction("Copy");
+    QAction *actionPaste = contextMenu.addAction("Paste");
+    QAction *actionDelete = contextMenu.addAction("Delete");
+
+    // 在菜单中添加分隔线
+    contextMenu.addSeparator();
+
+    // 添加其他自定义功能
+    QAction *actionCustom = contextMenu.addAction("Custom Action");
+
+    // 显示上下文菜单并获取所选操作
+    QAction *selectedAction = contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
+
+    if (selectedAction == actionOpen)
+    {
+        // 打开文件的逻辑
+    }
+    else if (selectedAction == actionCut)
+    {
+        // 剪切文件的逻辑
+    }
+    else if (selectedAction == actionCopy)
+    {
+        // 复制文件的逻辑
+    }
+    else if (selectedAction == actionPaste)
+    {
+        // 粘贴文件的逻辑
+    }
+    else if (selectedAction == actionDelete)
+    {
+        // 删除文件的逻辑
+    }
+    else if (selectedAction == actionCustom)
+    {
+        // 处理自定义操作的逻辑
+    }
 }
