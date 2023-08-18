@@ -28,10 +28,17 @@ private slots:
     void on_connect_clicked();
 
 public slots:
-    void onFolderItemClicked(QListWidgetItem *item);
+    void onFolderItemDoubleClicked(QListWidgetItem *item);
     void onFolderItemLeftDoubleClicked(QListWidgetItem *item);
-    void onsFolderItemClicked(QListWidgetItem *item);
+    void onsFolderItemDoubleClicked(QListWidgetItem *item);
     void onsFolderItemLeftDoubleClicked(QListWidgetItem *item);
+
+
+    void onFolderItemClicked(QListWidgetItem *item);
+    void onFolderItemRightClicked(QListWidgetItem *item);
+    void onsFolderItemClicked(QListWidgetItem *item);
+    void onsFolderItemRightClicked(QListWidgetItem *item);
+
     void goToParentDirectory();
 
 private:

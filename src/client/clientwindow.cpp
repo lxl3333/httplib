@@ -18,8 +18,11 @@ ClientWindow::ClientWindow(QWidget *parent)
     pal.setBrush(QPalette::Window, QBrush(QPixmap(":/icon/bg.png")));
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
-    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemClicked);
-    connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemClicked);
+    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
+    connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemDoubleClicked);
+
+    connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
+    connect(ui->listWidget_s, &QListWidget::itemClicked, this, &ClientWindow::onsFolderItemClicked);
     // connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     LOG_Debug("界面初始化");
     show_clientdir();
@@ -300,7 +303,7 @@ void ClientWindow::onsFolderItemLeftDoubleClicked(QListWidgetItem *item)
     }
 }
 
-void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
+void ClientWindow::onFolderItemDoubleClicked(QListWidgetItem *item)
 {
     Qt::MouseButtons mouseButton=QApplication::mouseButtons();
 
@@ -315,13 +318,44 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 
 }
 
-void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
+void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
 {
     Qt::MouseButtons mouseButton=QApplication::mouseButtons();
 
     if(mouseButton==Qt::LeftButton)
     {
         onsFolderItemLeftDoubleClicked(item);
+    }
+    // 其他鼠标双击逻辑
+    // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
+    // 调用原来的itemDoubleClicked信号处理逻辑
+    //else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
+
+}
+
+
+void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
+{
+    Qt::MouseButtons mouseButton=QApplication::mouseButtons();
+
+    if(mouseButton==Qt::LeftButton)
+    {
+        onFolderItemRightClicked(item);
+    }
+    // 其他鼠标双击逻辑
+    // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
+    // 调用原来的itemDoubleClicked信号处理逻辑
+    //else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
+
+}
+
+void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
+{
+    Qt::MouseButtons mouseButton=QApplication::mouseButtons();
+
+    if(mouseButton==Qt::LeftButton)
+    {
+        onsFolderItemRightClicked(item);
     }
     // 其他鼠标双击逻辑
     // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
