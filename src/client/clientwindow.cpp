@@ -10,7 +10,7 @@
 #include <QMouseEvent>
 
 ClientWindow::ClientWindow(QWidget *parent)
-    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")),remotefilemanager_(nullptr)
+    : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")), remotefilemanager_(nullptr)
 
 {
     ui->setupUi(this);
@@ -18,9 +18,9 @@ ClientWindow::ClientWindow(QWidget *parent)
     pal.setBrush(QPalette::Window, QBrush(QPixmap(":/icon/bg.png")));
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
-    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemClicked);
+    connect(ui->listWidget_c, &QListWidget::itemClicked, this, &ClientWindow::onFolderItemClicked);
     connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemClicked);
-    //connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
+    // connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     LOG_Debug("界面初始化");
     show_clientdir();
 }
@@ -56,7 +56,7 @@ void ClientWindow::on_connect_clicked()
     LOG_Debug(ip + " " + _port.toStdString());
     client_ = std::make_shared<httplib::Client>(ip, port); // 连接
     cloginmanager_ = std::make_unique<CLoginManager>(client_);
-    remotefilemanager_=std::make_unique<RemoteFileManager>(client_);
+    remotefilemanager_ = std::make_unique<RemoteFileManager>(client_);
     LOG_Debug("httplib::client创建客户端");
     if (!client_)
     {
@@ -90,7 +90,7 @@ void ClientWindow::on_connect_clicked()
     ui->connect->setText("断开");
 }
 
-void ClientWindow::show_clientdir(const QString path )
+void ClientWindow::show_clientdir(const QString path)
 {
     ui->clientdir->clear(); // 清空clientdir
 
@@ -151,7 +151,7 @@ void ClientWindow::show_clientdir(const QString path )
     }
 }
 
-void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
+void ClientWindow::onFolderItemLeftDoubleClicked(QListWidgetItem *item)
 {
     QString clickedItemText = item->text();
 
@@ -191,7 +191,7 @@ void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
 void ClientWindow::goToParentDirectory()
 {
     QString currentPath = ui->clientdir->text();
-    QString parentPath =QString::fromStdString(filemanager_->getParentDirectory(currentPath.toStdString()));
+    QString parentPath = QString::fromStdString(filemanager_->getParentDirectory(currentPath.toStdString()));
 
     if (!parentPath.isEmpty())
     {
@@ -202,7 +202,6 @@ void ClientWindow::goToParentDirectory()
         qDebug("已经在根目录，无法返回上一层");
     }
 }
-
 
 void ClientWindow::show_serverdir(const QString path)
 {
@@ -222,9 +221,9 @@ void ClientWindow::show_serverdir(const QString path)
     LOG_Info("添加上一级目录的项目");
     std::vector<std::pair<std::string, bool>> files;
 
-    remotefilemanager_->listRemoteFiles(path.toStdString(),cloginmanager_->GetToken(),files);
+    remotefilemanager_->listRemoteFiles(path.toStdString(), cloginmanager_->GetToken(), files);
 
-    remotefiles=files;
+    remotefiles = files;
 
     for (const auto &item : files)
     {
@@ -262,15 +261,17 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
         if (folderName == "..") // Handle going to parent directory
         {
             LOG_Info("go to parentDirectory");
-            auto findparentdir=[](const std::string& remotePath) ->std::string {
+            auto findparentdir = [](const std::string &remotePath) -> std::string
+            {
                 std::string parentPath = remotePath;
                 size_t lastSlashPos = parentPath.find_last_of('/');
-                if (lastSlashPos != std::string::npos) {
+                if (lastSlashPos != std::string::npos)
+                {
                     parentPath = parentPath.substr(0, lastSlashPos);
                 }
                 return parentPath;
             };
-            QString parentPath=QString::fromStdString(findparentdir(currentPath.toStdString()));
+            QString parentPath = QString::fromStdString(findparentdir(currentPath.toStdString()));
             if (!parentPath.isEmpty())
             {
                 ui->serverdir->setText(parentPath);
@@ -286,11 +287,11 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
         // Construct the full path of the clicked item
         QString clickedPath = currentPath + QDir::separator() + folderName;
 
-        for(auto& item:remotefiles)
+        for (auto &item : remotefiles)
         {
             const std::string &fileName = item.first;
             bool isDirectory = item.second;
-            if(fileName==folderName.toStdString()&&isDirectory)
+            if (fileName == folderName.toStdString() && isDirectory)
             {
                 show_serverdir(clickedPath);
                 break;
@@ -299,3 +300,28 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
     }
 }
 
+void ClientWindow::onFolderItemClicked(QListWidgetItem *item)
+{
+    QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(QApplication::instance()->focusWidget()->window()->currentMouseChild());
+
+    if (mouseEvent && mouseEvent->type() == QEvent::MouseButtonDblClick)
+    {
+        if (mouseEvent->button() == Qt::LeftButton)
+        {
+            // 左键双击逻辑
+            onFolderItemLeftDoubleClicked(item);
+        }
+        else
+        {
+            // 其他鼠标双击逻辑
+            // 在这里处理其他鼠标按钮的双击事件，例如右键双击等
+            // 调用原来的itemDoubleClicked信号处理逻辑
+            Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
+        }
+    }
+    else
+    {
+        // 非双击事件逻辑
+        // 在这里处理其他非双击事件，例如单击等
+    }
+}

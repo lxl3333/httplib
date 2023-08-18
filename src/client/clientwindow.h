@@ -21,7 +21,7 @@ class ClientWindow : public QWidget
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
-    void show_clientdir(const QString path= ""); // 显示客户端目录
+    void show_clientdir(const QString path = ""); // 显示客户端目录
     void show_serverdir(const QString path);
 
 private slots:
@@ -29,6 +29,7 @@ private slots:
 
 public slots:
     void onFolderItemClicked(QListWidgetItem *item);
+    void onFolderItemDoubleClicked(QListWidgetItem *item);
     void onsFolderItemClicked(QListWidgetItem *item);
     void goToParentDirectory();
 
@@ -39,6 +40,5 @@ private:
     std::unique_ptr<RemoteFileManager> remotefilemanager_;
     std::unique_ptr<FileManager> filemanager_;
     std::vector<std::pair<std::string, bool>> remotefiles;
-
 };
 #endif // CLIENTWINDOW_H
