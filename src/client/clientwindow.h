@@ -29,8 +29,9 @@ private slots:
 
 public slots:
     void onFolderItemClicked(QListWidgetItem *item);
-    void onFolderItemDoubleClicked(QListWidgetItem *item);
+    void onFolderItemLeftDoubleClicked(QListWidgetItem *item);
     void onsFolderItemClicked(QListWidgetItem *item);
+    void onsFolderItemLeftDoubleClicked(QListWidgetItem *item);
     void goToParentDirectory();
 
 private:
