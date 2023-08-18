@@ -18,7 +18,7 @@ ClientWindow::ClientWindow(QWidget *parent)
     pal.setBrush(QPalette::Window, QBrush(QPixmap(":/icon/bg.png")));
     setPalette(pal);
     // Singleton<Logger>::getInstance(std::cout).Debug("界面初始化");
-    ui->listWidget_c->installEventFilter(this);
+    connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemClicked);
     connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemClicked);
     //connect(ui->goToParentButton, &QPushButton::clicked, this, &ClientWindow::goToParentDirectory);
     LOG_Debug("界面初始化");
@@ -299,20 +299,3 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
     }
 }
 
-
-
-// 在ClientWindow类的实现文件中
-bool ClientWindow::eventFilter(QObject *obj, QEvent *event) {
-    LOG_Info("eventFilter");
-    if (obj == ui->listWidget_c && event->type() == QEvent::MouseButtonDblClick) {
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        if (mouseEvent->button() == Qt::LeftButton) {
-            QListWidgetItem *item = ui->listWidget_c->itemAt(mouseEvent->pos());
-            if (item && item->isSelected()) {
-                onFolderItemClicked(item);
-                return true; // 阻止事件继续传递
-            }
-        }
-    }
-    return QObject::eventFilter(obj, event); // 调用原来的事件处理函数
-}

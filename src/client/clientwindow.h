@@ -39,9 +39,6 @@ private:
     std::unique_ptr<RemoteFileManager> remotefilemanager_;
     std::unique_ptr<FileManager> filemanager_;
     std::vector<std::pair<std::string, bool>> remotefiles;
-protected:
-    // 在ClientWindow类的头文件中
-    bool eventFilter(QObject *obj, QEvent *event) override;
 
 };
 #endif // CLIENTWINDOW_H
