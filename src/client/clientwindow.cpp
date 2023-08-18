@@ -348,7 +348,7 @@ void ClientWindow::onsFolderItemClicked(QListWidgetItem *item)
     // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
-void ClientWindow::showContextMenu(QListWidgetItem *item)
+void ClientWindow::onFolderItemRightClicked(QListWidgetItem *item)
 {
     QMenu contextMenu(this);
     QAction *actionOpen = contextMenu.addAction("Open");
@@ -433,5 +433,18 @@ void ClientWindow::onsFolderItemRightClicked(QListWidgetItem *item)
     else if (selectedAction == actionCustom)
     {
         // 处理自定义操作的逻辑
+    }
+}
+
+void ClientWindow::showContextMenu(const QPoint &pos)
+{
+    QListWidgetItem *item = ui->listWidget_c->itemAt(pos);
+    if (item)
+    {
+        QMenu contextMenu(this);
+        QAction *rightClickAction = contextMenu.addAction("Right Click");
+        connect(rightClickAction, &QAction::triggered, this, [this, item]()
+                { onFolderItemRightClicked(item); });
+        contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
     }
 }
