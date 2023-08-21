@@ -362,30 +362,143 @@ void ClientWindow::showContextMenu(const QPoint &pos)
         // 显示上下文菜单并获取所选操作
         QAction *selectedAction = contextMenu.exec(QCursor::pos());
 
+
+        QString clickedItemText = item->text();
+
+        QString folderName = clickedItemText;
+        QString currentPath = ui->clientdir->text();
+
+        if(folderName=="..") return;
+
+        QString clickedPath = currentPath + QDir::separator() + folderName;
+
+        // Check if the clicked item is a folder
         if (selectedAction == actionOpen)
         {
-            // 打开文件的逻辑
+            if (filemanager_->FileExists(clickedPath.toStdString()))
+            {
+                // 使用系统默认的文本编辑器打开文件
+                std::string command = "xdg-open " + clickedPath.toStdString(); // 对于 Linux/Unix 系统
+                int result = system(command.c_str());
+                if (result == 0)
+                {
+                    std::cout << "File opened: " << clickedPath.toStdString() << std::endl;
+                }
+                else
+                {
+                    std::cout << "Failed to open file: " << clickedPath.toStdString() << std::endl;
+                }
+            }
+            else
+            {
+                std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
+            }
         }
-        else if (selectedAction == actionCut)
-        {
-            // 剪切文件的逻辑
-        }
-        else if (selectedAction == actionCopy)
-        {
-            // 复制文件的逻辑
-        }
-        else if (selectedAction == actionPaste)
-        {
-            // 粘贴文件的逻辑
-        }
+        // else if (selectedAction == actionCut)
+        // {
+        //     std::string filename; // 你需要指定要剪切的文件名
+        //     if (fileManager.FileExists(filename))
+        //     {
+        //         // 执行剪切文件的逻辑
+        //         // 假设你有一个剪贴板对象 clipboard
+        //         clipboard.cutFile(filename);
+        //     }
+        //     else
+        //     {
+        //         std::cout << "File not found: " << filename << std::endl;
+        //     }
+        // }
+        // else if (selectedAction == actionCopy)
+        // {
+        //     std::string filename; // 你需要指定要复制的文件名
+        //     if (fileManager.FileExists(filename))
+        //     {
+        //         // 执行复制文件的逻辑
+        //         // 假设你有一个剪贴板对象 clipboard
+        //         clipboard.copyFile(filename);
+        //     }
+        //     else
+        //     {
+        //         std::cout << "File not found: " << filename << std::endl;
+        //     }
+        // }
+        // else if (selectedAction == actionPaste)
+        // {
+        //     // 执行粘贴文件的逻辑
+        //     // 假设你有一个剪贴板对象 clipboard
+        //     if (clipboard.isFileCut())
+        //     {
+        //         std::string sourceFile = clipboard.getCutFilePath();
+        //         std::string destinationDirectory; // 你需要指定粘贴目标目录
+        //         if (fileManager.isDirectory(destinationDirectory))
+        //         {
+        //             std::string destinationPath = destinationDirectory + "/" + fs::path(sourceFile).filename().string();
+        //             if (fileManager.MoveFile(sourceFile, destinationPath))
+        //             {
+        //                 clipboard.clearCutFile();
+        //             }
+        //             else
+        //             {
+        //                 std::cout << "Failed to paste cut file." << std::endl;
+        //             }
+        //         }
+        //         else
+        //         {
+        //             std::cout << "Invalid destination directory." << std::endl;
+        //         }
+        //     }
+        //     else if (clipboard.isFileCopied())
+        //     {
+        //         std::string sourceFile = clipboard.getCopyFilePath();
+        //         std::string destinationDirectory; // 你需要指定粘贴目标目录
+        //         if (fileManager.isDirectory(destinationDirectory))
+        //         {
+        //             std::string destinationPath = destinationDirectory + "/" + fs::path(sourceFile).filename().string();
+        //             if (fileManager.CopyFile(sourceFile, destinationPath))
+        //             {
+        //                 clipboard.clearCopyFile();
+        //             }
+        //             else
+        //             {
+        //                 std::cout << "Failed to paste copied file." << std::endl;
+        //             }
+        //         }
+        //         else
+        //         {
+        //             std::cout << "Invalid destination directory." << std::endl;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         std::cout << "No file to paste in clipboard." << std::endl;
+        //     }
+        // }
         else if (selectedAction == actionDelete)
         {
-            // 删除文件的逻辑
+            if (filemanager_->FileExists(clickedPath.toStdString()))
+            {
+                // 执行删除文件的逻辑
+                if (filemanager_->RemoveFile(clickedPath.toStdString()))
+                {
+                    std::cout << "File deleted: " << clickedPath.toStdString() << std::endl;
+                    show_clientdir(currentPath);
+                }
+                else
+                {
+                    std::cout << "Failed to delete file: " << clickedPath.toStdString() << std::endl;
+                }
+            }
+            else
+            {
+                std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
+            }
         }
         else if (selectedAction == actionCustom)
         {
             // 处理自定义操作的逻辑
+            // 例如：根据用户需求执行相应的自定义操作
         }
+
     }
 }
 
@@ -410,29 +523,140 @@ void ClientWindow::showsContextMenu(const QPoint &pos)
         // 显示上下文菜单并获取所选操作
         QAction *selectedAction = contextMenu.exec(QCursor::pos());
 
+        QString clickedItemText = item->text();
+
+        QString folderName = clickedItemText;
+        QString currentPath = ui->serverdir->text();
+
+        if(folderName=="..") return;
+
+        QString clickedPath = currentPath + QDir::separator() + folderName;
+
+        // Check if the clicked item is a folder
         if (selectedAction == actionOpen)
         {
-            // 打开文件的逻辑
+            if (filemanager_->FileExists(clickedPath.toStdString()))
+            {
+                // 使用系统默认的文本编辑器打开文件
+                std::string command = "xdg-open " + clickedPath.toStdString(); // 对于 Linux/Unix 系统
+                int result = system(command.c_str());
+                if (result == 0)
+                {
+                    std::cout << "File opened: " << clickedPath.toStdString() << std::endl;
+                }
+                else
+                {
+                    std::cout << "Failed to open file: " << clickedPath.toStdString() << std::endl;
+                }
+            }
+            else
+            {
+                std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
+            }
         }
-        else if (selectedAction == actionCut)
-        {
-            // 剪切文件的逻辑
-        }
-        else if (selectedAction == actionCopy)
-        {
-            // 复制文件的逻辑
-        }
-        else if (selectedAction == actionPaste)
-        {
-            // 粘贴文件的逻辑
-        }
+        // else if (selectedAction == actionCut)
+        // {
+        //     std::string filename; // 你需要指定要剪切的文件名
+        //     if (fileManager.FileExists(filename))
+        //     {
+        //         // 执行剪切文件的逻辑
+        //         // 假设你有一个剪贴板对象 clipboard
+        //         clipboard.cutFile(filename);
+        //     }
+        //     else
+        //     {
+        //         std::cout << "File not found: " << filename << std::endl;
+        //     }
+        // }
+        // else if (selectedAction == actionCopy)
+        // {
+        //     std::string filename; // 你需要指定要复制的文件名
+        //     if (fileManager.FileExists(filename))
+        //     {
+        //         // 执行复制文件的逻辑
+        //         // 假设你有一个剪贴板对象 clipboard
+        //         clipboard.copyFile(filename);
+        //     }
+        //     else
+        //     {
+        //         std::cout << "File not found: " << filename << std::endl;
+        //     }
+        // }
+        // else if (selectedAction == actionPaste)
+        // {
+        //     // 执行粘贴文件的逻辑
+        //     // 假设你有一个剪贴板对象 clipboard
+        //     if (clipboard.isFileCut())
+        //     {
+        //         std::string sourceFile = clipboard.getCutFilePath();
+        //         std::string destinationDirectory; // 你需要指定粘贴目标目录
+        //         if (fileManager.isDirectory(destinationDirectory))
+        //         {
+        //             std::string destinationPath = destinationDirectory + "/" + fs::path(sourceFile).filename().string();
+        //             if (fileManager.MoveFile(sourceFile, destinationPath))
+        //             {
+        //                 clipboard.clearCutFile();
+        //             }
+        //             else
+        //             {
+        //                 std::cout << "Failed to paste cut file." << std::endl;
+        //             }
+        //         }
+        //         else
+        //         {
+        //             std::cout << "Invalid destination directory." << std::endl;
+        //         }
+        //     }
+        //     else if (clipboard.isFileCopied())
+        //     {
+        //         std::string sourceFile = clipboard.getCopyFilePath();
+        //         std::string destinationDirectory; // 你需要指定粘贴目标目录
+        //         if (fileManager.isDirectory(destinationDirectory))
+        //         {
+        //             std::string destinationPath = destinationDirectory + "/" + fs::path(sourceFile).filename().string();
+        //             if (fileManager.CopyFile(sourceFile, destinationPath))
+        //             {
+        //                 clipboard.clearCopyFile();
+        //             }
+        //             else
+        //             {
+        //                 std::cout << "Failed to paste copied file." << std::endl;
+        //             }
+        //         }
+        //         else
+        //         {
+        //             std::cout << "Invalid destination directory." << std::endl;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         std::cout << "No file to paste in clipboard." << std::endl;
+        //     }
+        // }
         else if (selectedAction == actionDelete)
         {
-            // 删除文件的逻辑
+            // if (filemanager_->FileExists(clickedPath.toStdString()))
+            // {
+                // 执行删除文件的逻辑
+                if (remotefilemanager_->removeRemoteFile(clickedPath.toStdString()))
+                {
+                    LOG_Info( "File deleted: " + clickedPath.toStdString());
+                    show_serverdir(currentPath);
+                }
+                else
+                {
+                    LOG_Info( "Failed to delete file: " + clickedPath.toStdString());
+                }
+            // }
+            // else
+            // {
+            //     std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
+            // }
         }
         else if (selectedAction == actionCustom)
         {
             // 处理自定义操作的逻辑
+            // 例如：根据用户需求执行相应的自定义操作
         }
     }
 }

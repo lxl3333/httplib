@@ -4,7 +4,7 @@ FileManager::FileManager(const std::string &path) : path_(path) {}
 
 bool FileManager::FileExists(const std::string &filename) const
 {
-    return fs::exists(path_ + filename);
+    return fs::exists(filename);
 }
 
 bool FileManager::CreateDirectory(const std::string &dirname) const
@@ -78,7 +78,7 @@ bool FileManager::RemoveFile(const std::string &filename) const
 {
     try
     {
-        fs::remove(path_ + filename);
+        fs::remove(filename);
         return true;
     }
     catch (const std::exception &e)

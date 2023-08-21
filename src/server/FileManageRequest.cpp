@@ -80,12 +80,29 @@ bool FileManageRequest::handleCopyFile(const httplib::Request &req, httplib::Res
 
 bool FileManageRequest::handleRemoveFile(const httplib::Request &req, httplib::Response &res)
 {
-    std::string filename = req.matches[1];
-    std::string targetpath = req.body;
-    if (fileManager_.RemoveFile(filename))
+    Json::CharReaderBuilder reader;
+    Json::Value root;
+
+    // Parse JSON body from request
+    std::string errors;
+    std::istringstream jsonStream(req.body);
+    bool parsingSuccessful = Json::parseFromStream(reader, jsonStream, &root, &errors);
+    
+    if (!parsingSuccessful) {
+        res.status = 400; // Bad Request
+        res.set_content("Invalid JSON format: " + errors, "text/plain");
+        return false;
+    }
+
+    std::string remotePath = root["filename"].asString();
+    LOG_Info("handleRemoveFile:" + remotePath);
+
+    std::string fullPath = fileManager_.getRootPath() + remotePath;
+
+    if (fileManager_.RemoveFile(fullPath))
     {
         res.status = 200;
-        res.set_content("File or directory delete successfully", "text/plain");
+        res.set_content("File or directory deleted successfully", "text/plain");
         return true;
     }
     else
@@ -95,6 +112,7 @@ bool FileManageRequest::handleRemoveFile(const httplib::Request &req, httplib::R
     }
     return false;
 }
+
 
 // void FileManageRequest::handleSetPermissions(const httplib::Request& req, httplib::Response& res) {
 //     std::string filename = req.matches[1];

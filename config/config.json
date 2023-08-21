@@ -48,7 +48,7 @@
       "url": "/files/delete",
       "method": "DELETE",
       "handler": "deleteFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/create-directory",

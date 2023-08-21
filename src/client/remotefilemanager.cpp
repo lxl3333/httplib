@@ -25,10 +25,32 @@ bool RemoteFileManager::copyRemoteFile(const std::string &filename, const std::s
     // Implementation for copying file on server
 }
 
-bool RemoteFileManager::removeRemoteFile(const std::string &filename)
-{
-    // Implementation for removing file on server
+bool RemoteFileManager::removeRemoteFile(const std::string& filename) {
+    std::string url = "/files/delete"; // Replace with the actual API endpoint
+
+    httplib::Headers headers = {
+        {"Content-Type", "application/json"}
+    };
+
+    Json::Value requestData;
+    requestData["filename"] = filename;
+
+    Json::StreamWriterBuilder writer;
+    std::string jsonRequestBody = Json::writeString(writer, requestData);
+
+    httplib::Result result = client_->Delete(url.c_str(), headers, jsonRequestBody, "application/json");
+
+    if (result && result->status == 200) {
+        // Check the response from the server if the file was successfully removed
+        // Update the return value accordingly
+        return true;
+    } else {
+        // Handle error and return false
+        LOG_Info("Handle error and return false");
+        return false;
+    }
 }
+
 
 // bool RemoteFileManager::listRemoteFiles(const std::string &remotePath, std::vector<std::pair<std::string, bool>> &files)
 // {

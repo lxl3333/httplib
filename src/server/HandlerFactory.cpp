@@ -41,8 +41,13 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             return true; // or false, depending on the result
         };
     }
-    else
-    {
+    else if (handler.url == "/files/delete") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileManageRequest(handler.dir).handleRemoveFile(req, res);
+            return true;  // or false, depending on the result
+        };
+    }
+    else{
         handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
         {
             res.status = 404;
@@ -68,12 +73,7 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
     //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
     //         return true;  // or false, depending on the result
     //     };
-    // } else if (handler.url == "/files/delete") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
-    // } else if (handler.url == "/files/create-directory") {
+    // }  else if (handler.url == "/files/create-directory") {
     //     return [](const httplib::Request& req, httplib::Response& res) {
     //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
     //         return true;  // or false, depending on the result
