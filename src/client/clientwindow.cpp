@@ -9,9 +9,9 @@
 #include <QDir>
 #include <QMouseEvent>
 #include <QMenu>
-
 ClientWindow::ClientWindow(QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")), remotefilemanager_(nullptr)
+    ,clipboardmanager_(std::make_unique<ClipboardManager>())
 
 {
     ui->setupUi(this);
@@ -359,8 +359,22 @@ void ClientWindow::showContextMenu(const QPoint &pos)
         // 添加其他自定义功能
         QAction *actionCustom = contextMenu.addAction("Custom Action");
 
+        //调节显示粘贴键
+        if (clipboardmanager_->hasCutFile() || clipboardmanager_->hasCopiedFile())
+        {
+            actionPaste->setEnabled(true); // 可以粘贴
+        }
+        else
+        {
+            actionPaste->setEnabled(false); // 不可粘贴（灰色）
+            QFont font = actionPaste->font();
+            font.setItalic(true); // 将字体设置为斜体
+            actionPaste->setFont(font);
+        }
+
         // 显示上下文菜单并获取所选操作
         QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
 
 
         QString clickedItemText = item->text();

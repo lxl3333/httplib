@@ -15,7 +15,8 @@ public:
     std::string getCutFilePath() const;
     void clearCopyFile();
     void clearCutFile();
-
+    bool hasCutFile() const;
+    bool hasCopiedFile() const;
 private:
     bool copied_;
     bool cut_;

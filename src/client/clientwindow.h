@@ -5,6 +5,8 @@
 #include "../base/FileManager.h"
 #include "../include/httplib.h"
 #include "remotefilemanager.h"
+#include "clipboardmanager.h"
+
 #include <QWidget>
 #include <QListWidgetItem>
 QT_BEGIN_NAMESPACE
@@ -45,5 +47,6 @@ private:
     std::unique_ptr<RemoteFileManager> remotefilemanager_;
     std::unique_ptr<FileManager> filemanager_;
     std::vector<std::pair<std::string, bool>> remotefiles;
+    std::unique_ptr<ClipboardManager> clipboardmanager_;
 };
 #endif // CLIENTWINDOW_H

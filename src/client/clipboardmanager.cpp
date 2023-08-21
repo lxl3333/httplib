@@ -41,3 +41,16 @@ void ClipboardManager::clearCutFile() {
     cut_ = false;
     cutFilePath_ = "";
 }
+
+
+// 添加一个方法来判断是否有文件被剪切
+bool ClipboardManager::hasCutFile() const
+{
+    return cut_;
+}
+
+// 添加一个方法来判断是否有文件被复制
+bool ClipboardManager::hasCopiedFile() const
+{
+    return copied_;
+}
