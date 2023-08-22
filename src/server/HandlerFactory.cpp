@@ -47,6 +47,23 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             return true;  // or false, depending on the result
         };
     }
+    else if (handler.url == "/files/CheckFileExist") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileManageRequest(handler.dir).handleFileExists(req, res);
+            return true;  // or false, depending on the result
+        };
+    }
+    else if (handler.url == "/files/move") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileManageRequest(handler.dir).handleMoveFile(req, res);
+            return true;  // or false, depending on the result
+        };
+    } else if (handler.url == "/files/copy") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileManageRequest(handler.dir).handleCopyFile(req, res);
+            return true;  // or false, depending on the result
+        };
+    }
     else{
         handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
         {
@@ -83,17 +100,7 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
     //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
     //         return true;  // or false, depending on the result
     //     };
-    // } else if (handler.url == "/files/move") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
-    // } else if (handler.url == "/files/copy") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
-    // }
+
 
     // Default handler
     if (handler.method == "GET")

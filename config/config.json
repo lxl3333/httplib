@@ -21,6 +21,12 @@
       "dir": "/home/scutech"
     },
     {
+      "url": "/files/CheckFileExist",
+      "method": "POST",
+      "handler": "CheckFileExist",
+      "dir": "/home/scutech"
+    },
+    {
       "url": "/files/upload/FixedFile",
       "method": "POST",
       "handler": "uploadFixedFile",
@@ -64,15 +70,15 @@
     },
     {
       "url": "/files/move",
-      "method": "PUT",
+      "method": "POST",
       "handler": "moveFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/copy",
       "method": "POST",
       "handler": "copyFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/auth/login",

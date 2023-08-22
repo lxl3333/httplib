@@ -17,7 +17,7 @@ public:
     bool copyRemoteFile(const std::string &filename, const std::string &targetpath);
     bool removeRemoteFile(const std::string &filename);
     bool listRemoteFiles(const std::string &remotePath,std::string token,std::vector<std::pair<std::string, bool>> &files);
-
+    bool checkFileExist(const std::string &filename,std::string token);
 private:
     std::shared_ptr<httplib::Client> client_;
 };

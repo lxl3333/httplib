@@ -15,15 +15,71 @@ bool RemoteFileManager::renameRemoteFile(const std::string &filename, const std:
     // Implementation for renaming file on server
 }
 
+
 bool RemoteFileManager::moveRemoteFile(const std::string &filename, const std::string &newpath)
 {
-    // Implementation for moving file on server
+    std::string requestPath = "/files/move"; // Assuming the server API endpoint is "/move_file"
+
+    httplib::Params params;
+    params.emplace("filename", filename);
+    params.emplace("newpath", newpath);
+    
+    httplib::Headers headers = {
+        {"Content-Type", "application/x-www-form-urlencoded"}
+    };
+
+    // Make a POST request to the server
+    auto response = client_->Post(requestPath.c_str(), headers, params);
+
+    if (response && response->status == 200)
+    {
+        // Check the response content for success or failure
+        if (response->body == "File or directory moved successfully")
+        {
+            return true;
+        }
+        else
+        {
+            // Handle the failure case
+            return false;
+        }
+    }
+    
+    return false; // Return false if the request failed or the response was not as expected
 }
 
 bool RemoteFileManager::copyRemoteFile(const std::string &filename, const std::string &targetpath)
 {
-    // Implementation for copying file on server
+    std::string requestPath = "/files/copy"; // Assuming the server API endpoint is "/copy_file"
+
+    httplib::Params params;
+    params.emplace("filename", filename);
+    params.emplace("targetpath", targetpath);
+    
+    httplib::Headers headers = {
+        {"Content-Type", "application/x-www-form-urlencoded"}
+    };
+
+    // Make a POST request to the server
+    auto response = client_->Post(requestPath.c_str(), headers, params);
+
+    if (response && response->status == 200)
+    {
+        // Check the response content for success or failure
+        if (response->body == "File or directory copied successfully")
+        {
+            return true;
+        }
+        else
+        {
+            // Handle the failure case
+            return false;
+        }
+    }
+    
+    return false; // Return false if the request failed or the response was not as expected
 }
+
 
 bool RemoteFileManager::removeRemoteFile(const std::string& filename) {
     std::string url = "/files/delete"; // Replace with the actual API endpoint
@@ -105,4 +161,36 @@ bool RemoteFileManager::listRemoteFiles(const std::string &remotePath ,std::stri
         return false;
     }
 
+}
+
+bool RemoteFileManager::checkFileExist(const std::string &filename, std::string token)
+{
+    std::string requestPath = "/files/CheckFileExist"; // Assuming the server API endpoint is "/check_file_exist"
+
+    httplib::Params params;
+    params.emplace("token", token);
+    params.emplace("filename", filename);
+    
+    httplib::Headers headers = {
+        {"Content-Type", "application/x-www-form-urlencoded"}
+    };
+
+    // Make a POST request to the server
+    auto response = client_->Post(requestPath, headers, params);
+
+    if (response && response->status == 200)
+    {
+        // Check the response content to determine if the file exists
+        if (response->body == "File exists")
+        {
+            return true;
+        }
+        else if (response->body == "File not found")
+        {
+            return false;
+        }
+        // Handle other response content as needed
+    }
+    
+    return false; // Return false if the request failed or the response was not as expected
 }

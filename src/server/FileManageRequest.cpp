@@ -44,9 +44,10 @@ bool FileManageRequest::handleRenameFile(const httplib::Request &req, httplib::R
 
 bool FileManageRequest::handleMoveFile(const httplib::Request &req, httplib::Response &res)
 {
-    std::string filename = req.matches[1];
-    std::string newpath = req.body;
-    if (fileManager_.MoveFile(filename, newpath))
+    std::string filename = req.get_param_value("filename");
+    std::string newpath = req.get_param_value("newpath");
+    
+    if (fileManager_.MoveFile(fileManager_.getRootPath()+filename, fileManager_.getRootPath()+newpath))
     {
         res.status = 200;
         res.set_content("File or directory moved successfully", "text/plain");
@@ -56,15 +57,16 @@ bool FileManageRequest::handleMoveFile(const httplib::Request &req, httplib::Res
     {
         res.status = 500;
         res.set_content("Failed to move file or directory", "text/plain");
+        return false;
     }
-    return false;
 }
 
 bool FileManageRequest::handleCopyFile(const httplib::Request &req, httplib::Response &res)
 {
-    std::string filename = req.matches[1];
-    std::string targetpath = req.body;
-    if (fileManager_.CopyFile(filename, targetpath))
+    std::string filename = req.get_param_value("filename");
+    std::string targetpath = req.get_param_value("targetpath");
+    
+    if (fileManager_.CopyFile(fileManager_.getRootPath()+filename,fileManager_.getRootPath()+targetpath))
     {
         res.status = 200;
         res.set_content("File or directory copied successfully", "text/plain");
@@ -74,9 +76,10 @@ bool FileManageRequest::handleCopyFile(const httplib::Request &req, httplib::Res
     {
         res.status = 500;
         res.set_content("Failed to copy file or directory", "text/plain");
+        return false;
     }
-    return false;
 }
+
 
 bool FileManageRequest::handleRemoveFile(const httplib::Request &req, httplib::Response &res)
 {
@@ -172,3 +175,27 @@ bool FileManageRequest::handleListFiles(const httplib::Request &req, httplib::Re
         return false;
     }
 }
+
+
+bool FileManageRequest::handleFileExists(const httplib::Request &req, httplib::Response &res) {
+    std::string remotePath = req.get_param_value("path"); // Assuming you pass the remote path as a query parameter
+
+    LOG_Info("handleFileExists:" + remotePath);
+    // Construct the full path using the rootPath and remotePath
+    std::string fullPath = fileManager_.getRootPath() + remotePath;
+
+    // Check if the path exists and is a file
+    if (fileManager_.FileExists(fullPath))
+    {
+        res.status = 200;
+        res.set_content("File exists", "text/plain");
+    }
+    else
+    {
+        res.status = 404; // Not Found
+        res.set_content("File not found", "text/plain");
+    }
+    
+    return true;
+}
+

@@ -9,12 +9,12 @@ bool FileManager::FileExists(const std::string &filename) const
 
 bool FileManager::CreateDirectory(const std::string &dirname) const
 {
-    return fs::create_directory(path_ + dirname);
+    return fs::create_directory( dirname);
 }
 
 bool FileManager::CreateFile(const std::string &filename) const
 {
-    std::ofstream outfile(path_ + filename);
+    std::ofstream outfile(filename);
     return outfile.good();
 }
 
@@ -22,7 +22,7 @@ bool FileManager::CopyFile(const std::string &srcFilename, const std::string &de
 {
     try
     {
-        fs::copy(path_ + srcFilename, path_ + destFilename);
+        fs::copy(srcFilename,destFilename);
         return true;
     }
     catch (const std::exception &e)
@@ -36,7 +36,7 @@ bool FileManager::CopyDirectory(const std::string &srcDirname, const std::string
 {
     try
     {
-        fs::copy(path_ + srcDirname, path_ + destDirname, fs::copy_options::recursive);
+        fs::copy(srcDirname, destDirname, fs::copy_options::recursive);
         return true;
     }
     catch (const std::exception &e)
@@ -50,7 +50,7 @@ bool FileManager::MoveFile(const std::string &srcFilename, const std::string &de
 {
     try
     {
-        fs::rename(path_ + srcFilename, path_ + destFilename);
+        fs::rename(srcFilename, destFilename);
         return true;
     }
     catch (const std::exception &e)

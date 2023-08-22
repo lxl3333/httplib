@@ -17,7 +17,7 @@ public:
     bool handleRemoveFile(const httplib::Request &req, httplib::Response &res);
     //    void handleSetPermissions(const httplib::Request& req, httplib::Response& res);
     bool handleListFiles(const httplib::Request &req, httplib::Response &res);
-
+    bool handleFileExists(const httplib::Request &req, httplib::Response &res);
 private:
     FileManager fileManager_;
 };

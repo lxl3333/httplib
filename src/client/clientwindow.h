@@ -48,5 +48,6 @@ private:
     std::unique_ptr<FileManager> filemanager_;
     std::vector<std::pair<std::string, bool>> remotefiles;
     std::unique_ptr<ClipboardManager> clipboardmanager_;
+    std::unique_ptr<ClipboardManager> serverclipboardmanager_;
 };
 #endif // CLIENTWINDOW_H
