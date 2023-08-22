@@ -9,6 +9,9 @@
 #include <QDir>
 #include <QMouseEvent>
 #include <QMenu>
+
+
+
 ClientWindow::ClientWindow(QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientWindow), client_(nullptr), cloginmanager_(nullptr), filemanager_(std::make_unique<FileManager>("/home/scutech")), remotefilemanager_(nullptr)
     ,clipboardmanager_(std::make_unique<ClipboardManager>())
@@ -22,7 +25,6 @@ ClientWindow::ClientWindow(QWidget *parent)
     // connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
     connect(ui->listWidget_s, &QListWidget::itemDoubleClicked, this, &ClientWindow::onsFolderItemDoubleClicked);
     connect(ui->listWidget_c, &QListWidget::itemDoubleClicked, this, &ClientWindow::onFolderItemDoubleClicked);
-
 
     ui->listWidget_c->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget_c, &QListWidget::customContextMenuRequested, this, &ClientWindow::showContextMenu);
@@ -372,6 +374,10 @@ void ClientWindow::showContextMenu(const QPoint &pos)
             actionPaste->setFont(font);
         }
 
+        QPalette pal = contextMenu.palette();
+        pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+        contextMenu.setPalette(pal);
+        
         // 显示上下文菜单并获取所选操作
         QAction *selectedAction = contextMenu.exec(QCursor::pos());
 
@@ -674,3 +680,5 @@ void ClientWindow::showsContextMenu(const QPoint &pos)
         }
     }
 }
+
+
