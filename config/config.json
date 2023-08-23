@@ -30,25 +30,25 @@
       "url": "/files/upload/FixedFile",
       "method": "POST",
       "handler": "uploadFixedFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/upload/ChunkedFile",
       "method": "POST",
       "handler": "uploadChunkedFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/download/FixedFile",
       "method": "GET",
       "handler": "downloadFixedFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/download/ChunkedFile",
       "method": "GET",
       "handler": "downloadChunkedFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/delete",
@@ -60,13 +60,13 @@
       "url": "/files/create-directory",
       "method": "POST",
       "handler": "createDirectory",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/rename",
       "method": "PUT",
       "handler": "renameFile",
-      "dir": "/var/ftp/files"
+      "dir": "/home/scutech"
     },
     {
       "url": "/files/move",
