@@ -26,6 +26,7 @@ public:
     bool MoveDirectory(const std::string &srcDirname, const std::string &destDirname) const;
     bool RemoveFile(const std::string &filename) const;
     bool RemoveDirectory(const std::string &dirname) const;
+    std::string ReadFileContents(const std::string& filePath) const;
     std::vector<std::string> GetFileList() const;
     std::string getRootPath() const;
 

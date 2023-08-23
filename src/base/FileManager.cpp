@@ -155,3 +155,28 @@ std::string FileManager::getParentDirectory(const std::string &path) const
 
     return ""; // Return empty string if it's the root directory
 }
+
+
+std::string FileManager::ReadFileContents(const std::string& filePath) const
+{
+    if (!fs::exists(filePath)) {
+        // Handle error
+        return "";
+    }
+
+    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        // Handle error
+        return "";
+    }
+
+    std::streamsize fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::string fileContent(fileSize, '\0');
+    if (!file.read(&fileContent[0], fileSize)) {
+        return "";
+    }
+
+    return fileContent;
+}
