@@ -12,7 +12,7 @@ public:
   bool SendFixedFile(httplib::Request &req,httplib::Response &res);
   bool SendChunkedFile(httplib::Request &req,httplib::Response &res);
   bool Sendc(httplib::Request &req,httplib::Response &res);
-  bool ReceiveFixedFile(httplib::Request &req,httplib::Response &res);
+  bool UploadFixedFile(const httplib::Request &req,httplib::Response &res,std::string rootPath);
   bool ReceiveChunkedFile(httplib::Request &req,httplib::Response &res);
   bool ReceiveDirectory(httplib::Request &req,httplib::Response &res);
 

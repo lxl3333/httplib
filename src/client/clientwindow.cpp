@@ -3,6 +3,8 @@
 
 #include "../base/Singleton.h"
 #include "../base/Logger.h"
+#include "filetransmissionmanager.h"
+
 
 #include <QPalette>
 #include <QMessageBox>
@@ -350,6 +352,7 @@ void ClientWindow::showContextMenu(const QPoint &pos)
     if (item)
     {
         QMenu contextMenu(this);
+        QAction *actionUpload = contextMenu.addAction("Upload");
         QAction *actionOpen = contextMenu.addAction("Open");
         QAction *actionCut = contextMenu.addAction("Cut");
         QAction *actionCopy = contextMenu.addAction("Copy");
@@ -394,7 +397,15 @@ void ClientWindow::showContextMenu(const QPoint &pos)
         QString clickedPath = currentPath + QDir::separator() + folderName;
 
         // Check if the clicked item is a folder
-        if (selectedAction == actionOpen)
+        if(selectedAction == actionUpload)
+        {
+            if(filemanager_->FileExists(clickedPath.toStdString()))
+            {
+                FileTransmissionManager(client_).UploadFixedFile(ui->serverdir->text().toStdString(),clickedPath.toStdString(),folderName.toStdString(),cloginmanager_->GetToken());
+                show_serverdir(ui->serverdir->text());
+            }
+        }
+        else if (selectedAction == actionOpen)
         {
             if (filemanager_->FileExists(clickedPath.toStdString()))
             {

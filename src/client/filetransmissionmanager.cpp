@@ -1,42 +1,59 @@
 #include "filetransmissionmanager.h"
 #include <fstream>
-#include <filesystem>
+#include "../base/Logger.h"
 
 namespace fs = std::filesystem;
 
 FileTransmissionManager::FileTransmissionManager(std::shared_ptr<httplib::Client> client)
     :client_(client){}
 
-bool FileTransmissionManager::UploadFixedFile(const std::string& filePath) {
-    if (!fs::exists(filePath) || !fs::is_regular_file(filePath)) {
-        // 文件不存在或不是普通文件
+bool FileTransmissionManager::UploadFixedFile(const std::string& remotePath, const std::string& localPath,const std::string fileName, std::string token) {
+    LOG_Info("UploadFixedFile");
+    std::string url = "/files/upload/FixedFile";
+
+    httplib::Headers headers = httplib::Headers{
+        {"token", token},
+        {"remotePath", remotePath},
+        {"fileName",fileName},
+        {"Content-Type", "application/octet-stream"}  // 设置请求头
+    };
+
+    std::ifstream file(localPath, std::ios::binary);
+    if (!file.is_open()) {
+        // Handle error: unable to open the local file
         return false;
     }
 
-    size_t fileSize = fs::file_size(filePath);
+    // Calculate file size
+    file.seekg(0, std::ios::end);
+    size_t fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
 
-    httplib::Request request;
-    request.method = "POST";
-    request.headers = {
-        { "Content-Length", std::to_string(fileSize) },
-        { "Content-Type", "application/octet-stream" }
-    };
-    request.body = fs::load_file(filePath);
-
-    httplib::Response response;
-    if (client_->send(request, response)) {
-        if (response.status == 200) {
-            // 上传成功
+    // Initialize buffer
+    constexpr size_t BUFFER_SIZE = 4096;
+    std::vector<char> buffer(BUFFER_SIZE);
+    LOG_Info("ready to post");
+    if (auto result = client_->Post(url, headers,fileSize,
+        [&](size_t offset,size_t length, httplib::DataSink& sink) {
+            size_t bytesToRead = std::min(BUFFER_SIZE, fileSize);
+            if (bytesToRead > 0) {
+                file.read(buffer.data(), bytesToRead);
+                sink.write(buffer.data(), bytesToRead);
+                fileSize -= bytesToRead;
+            } else {
+                sink.done();
+            }
             return true;
-        } else {
-            // 上传失败
-            return false;
-        }
+        },
+            "application/octet-stream")) {
+        // Handle success
+        return true;
     } else {
-        // 请求发送失败
+        // Handle error
         return false;
     }
 }
+
 
 
 bool FileTransmissionManager::UploadChunkedFile(const std::string& filePath) {

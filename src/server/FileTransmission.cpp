@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "../base/Logger.h"
+
 FileTransmission::FileTransmission() {}
 
 bool FileTransmission::SendFixedFile(httplib::Request& req, httplib::Response& res) {
@@ -68,20 +70,31 @@ bool FileTransmission::Sendc(httplib::Request& req, httplib::Response& res) {
   return true;
 }
 
-bool FileTransmission::ReceiveFixedFile(httplib::Request& req, httplib::Response& res) {
-  std::string file_path = req.get_param_value("file_path");
-  std::ofstream file(file_path, std::ios::binary);
+bool FileTransmission::UploadFixedFile(const httplib::Request& req, httplib::Response& res,std::string rootPath) {
+    std::string file_path = req.get_header_value("remotePath");
+    std::string file_name = req.get_header_value("fileName");
+    LOG_Info("UploadFixedFile:"+rootPath+file_path+"/"+file_name);
+    std::ofstream file(rootPath+file_path+"/"+file_name, std::ios::binary);
 
-  if (!file) {
-    res.status = 500;
-    res.set_content("Failed to create file", "text/plain");
-    return false;
-  }
+    if (!file) {
+        res.status = 500;
+        res.set_content("Failed to create file", "text/plain");
+        return false;
+    }
 
-  file << req.body;
-  res.set_content("File received", "text/plain");
-  return true;
+    // Get the content length from the request headers
+    size_t content_length = std::stoul(req.get_header_value("Content-Length"));
+
+    // Read the content of the specified length from the request body and write to the file
+    std::string content = req.body.substr(0, content_length);
+    file.write(content.c_str(), content_length);
+
+    res.status = 200; 
+    res.set_content("File received", "text/plain");
+    return true;
 }
+
+
 
 bool FileTransmission::ReceiveChunkedFile(httplib::Request& req, httplib::Response& res) {
   std::string file_path = req.get_param_value("file_path");

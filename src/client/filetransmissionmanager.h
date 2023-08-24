@@ -8,7 +8,7 @@ class FileTransmissionManager {
 public:
     FileTransmissionManager(std::shared_ptr<httplib::Client> client);
 
-    bool UploadFixedFile(const std::string& filePath);
+    bool UploadFixedFile(const std::string& remotePath,const std::string& localPath,const std::string fileName,std::string token);
     bool UploadChunkedFile(const std::string& filePath);
     bool DownloadFixedFile(const std::string& remotePath,
                            const std::string& localPath);
