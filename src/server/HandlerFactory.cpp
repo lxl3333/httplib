@@ -69,6 +69,11 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             FileTransmission().UploadFixedFile(req,res,handler.dir);
             return true;  // or false, depending on the result
         };
+    }else if (handler.url == "/files/upload/ChunkedFile") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileTransmission().UploadChunkedFile(req,res,handler.dir);
+            return true;  // or false, depending on the result
+        };
     }
     else{
         handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
@@ -77,11 +82,7 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
         };
     }
 
-    // } else if (handler.url == "/files/upload/ChunkedFile") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
+
     // } else if (handler.url == "/files/download/FixedFile") {
     //     return [](const httplib::Request& req, httplib::Response& res) {
     //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);

@@ -95,21 +95,55 @@ bool FileTransmission::UploadFixedFile(const httplib::Request& req, httplib::Res
 }
 
 
+bool FileTransmission::UploadChunkedFile(const httplib::Request& req, httplib::Response& res,std::string rootPath) {
+    std::string remotePath = req.get_header_value("remotePath");
+    std::string fileName = req.get_header_value("fileName");
+    LOG_Info("UploadChunkedFile"+rootPath+remotePath + "/" + fileName);
+    std::ofstream file(rootPath+remotePath + "/" + fileName, std::ios::binary);
+    if (!file) {
+        res.status = 500;
+        res.set_content("Failed to create file", "text/plain");
+        return false;
+    }
+    LOG_Info(req.body);
+    std::istringstream body_stream(req.body);
+    std::string line;
+    size_t chunk_size = 0;
 
-bool FileTransmission::ReceiveChunkedFile(httplib::Request& req, httplib::Response& res) {
-  std::string file_path = req.get_param_value("file_path");
-  std::ofstream file(file_path, std::ios::binary);
+    // 逐行读取块的大小
+    while (std::getline(body_stream, line)) {
+        // 将十六进制的块大小转换为整数
+        chunk_size = std::stoul(line, nullptr, 16);
 
-  if (!file) {
-    res.status = 500;
-    res.set_content("Failed to create file", "text/plain");
-    return false;
-  }
+        if (chunk_size == 0) {
+            break; // 数据块传输结束
+        }
 
-  file << req.body;
-  res.set_content("File received", "text/plain");
-  return true;
+        char buffer[4096];
+        while (chunk_size > 0) {
+            // 计算要读取的大小
+            size_t read_size = std::min(chunk_size, sizeof(buffer));
+            
+            // 从流中读取数据块
+            body_stream.read(buffer, read_size);
+            
+            // 将读取的数据块写入文件
+            file.write(buffer, read_size);
+            
+            // 更新剩余块大小
+            chunk_size -= read_size;
+        }
+
+        // 读取并丢弃块末尾的 CRLF（回车换行）
+        body_stream.ignore(2);
+    }
+
+
+    res.status=200;
+    res.set_content("File received", "text/plain");
+    return true;
 }
+
 
 bool FileTransmission::ReceiveDirectory(httplib::Request& req, httplib::Response& res) {
   std::string dir_path = req.get_param_value("dir_path");

@@ -342,9 +342,6 @@ void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
 }
 
 
-
-
-
 void ClientWindow::showContextMenu(const QPoint &pos)
 {
     QListWidgetItem *item = ui->listWidget_c->itemAt(pos);
@@ -401,7 +398,7 @@ void ClientWindow::showContextMenu(const QPoint &pos)
         {
             if(filemanager_->FileExists(clickedPath.toStdString()))
             {
-                FileTransmissionManager(client_).UploadFixedFile(ui->serverdir->text().toStdString(),clickedPath.toStdString(),folderName.toStdString(),cloginmanager_->GetToken());
+                FileTransmissionManager(client_).UploadChunkedFile(ui->serverdir->text().toStdString(),clickedPath.toStdString(),folderName.toStdString(),cloginmanager_->GetToken());
                 show_serverdir(ui->serverdir->text());
             }
         }
