@@ -6,41 +6,55 @@
 
 FileManageRequest::FileManageRequest(const std::string &rootPath) : fileManager_(rootPath) {}
 
-bool FileManageRequest::handleCreateDirectory(const httplib::Request &req, httplib::Response &res)
+bool FileManageRequest::handleCreateFileOrDirectory(const httplib::Request &req, httplib::Response &res)
 {
-    std::string dirname = req.body;
-    if (fileManager_.CreateDirectory(dirname))
-    {
-        res.status = 200;
-        res.set_content("Directory created successfully", "text/plain");
-        return true;
+    std::string filename = req.get_param_value("name"); // Use "name" parameter for both files and directories
+    bool isDirectory = req.get_param_value("is_directory") == "true"; // Check if it's a directory creation request
+
+    if (isDirectory) {
+        if (fileManager_.CreateDirectory(fileManager_.getRootPath() + filename))
+        {
+            res.status = 200;
+            res.set_content("Created successfully", "text/plain");
+            return true;
+        }
+    } else {
+        if (fileManager_.CreateFile(fileManager_.getRootPath() + filename))
+        {
+            res.status = 200;
+            res.set_content("Created successfully", "text/plain");
+            return true;
+        }
     }
-    else
-    {
-        res.status = 500;
-        res.set_content("Failed to create directory", "text/plain");
-        return false;
-    }
+
+    res.status = 500;
+    res.set_content("Creation failed", "text/plain");
     return false;
 }
 
+
+
+
 bool FileManageRequest::handleRenameFile(const httplib::Request &req, httplib::Response &res)
 {
-    std::string filename = req.matches[1];
-    std::string newname = req.body;
-    if (fileManager_.MoveFile(filename, newname))
+    std::string filename = req.get_param_value("oldname"); // Use "oldname" parameter for the original filename
+    std::string newname = req.get_param_value("newname"); // Use "newname" parameter for the desired new name
+
+    if (!filename.empty() && !newname.empty()) // Check if both parameters are provided
     {
-        res.status = 200;
-        res.set_content("File or directory renamed successfully", "text/plain");
-        return true;
+        if (fileManager_.MoveFile(fileManager_.getRootPath()+filename,fileManager_.getRootPath()+ newname))
+        {
+            res.status = 200;
+            res.set_content("Renamed successfully", "text/plain");
+            return true;
+        }
     }
-    else
-    {
-        res.status = 500;
-        res.set_content("Failed to rename file or directory", "text/plain");
-    }
+
+    res.status = 500;
+    res.set_content("Renaming failed", "text/plain");
     return false;
 }
+
 
 bool FileManageRequest::handleMoveFile(const httplib::Request &req, httplib::Response &res)
 {

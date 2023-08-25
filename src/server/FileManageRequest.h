@@ -10,7 +10,7 @@ class FileManageRequest
 public:
     FileManageRequest(const std::string &rootPath);
 
-    bool handleCreateDirectory(const httplib::Request &req, httplib::Response &res);
+    bool handleCreateFileOrDirectory(const httplib::Request &req, httplib::Response &res);
     bool handleRenameFile(const httplib::Request &req, httplib::Response &res);
     bool handleMoveFile(const httplib::Request &req, httplib::Response &res);
     bool handleCopyFile(const httplib::Request &req, httplib::Response &res);

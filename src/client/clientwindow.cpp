@@ -664,16 +664,22 @@ void ClientWindow::showsContextMenu(const QPoint &pos)
     {
         QMenu contextMenu(this);
         QAction *actionOpen = contextMenu.addAction("Open");
+
+        // 在菜单中添加分隔线
+        contextMenu.addSeparator();
+
         QAction *actionCut = contextMenu.addAction("Cut");
         QAction *actionCopy = contextMenu.addAction("Copy");
         QAction *actionPaste = contextMenu.addAction("Paste");
-        QAction *actionDelete = contextMenu.addAction("Delete");
+        QAction *actionCreateFile = contextMenu.addAction("Create File");
+        QAction *actionCreateFolder = contextMenu.addAction("Create Folder");
 
         // 在菜单中添加分隔线
         contextMenu.addSeparator();
 
         // 添加其他自定义功能
-        QAction *actionCustom = contextMenu.addAction("Custom Action");
+        QAction *actionDelete = contextMenu.addAction("Delete");
+        QAction *actionRename = contextMenu.addAction("Rename");
 
         //调节显示粘贴键
         if (serverclipboardmanager_->hasCutFile() || serverclipboardmanager_->hasCopiedFile())
@@ -835,10 +841,23 @@ void ClientWindow::showsContextMenu(const QPoint &pos)
                 LOG_Info( "Failed to delete file: " + clickedPath.toStdString());
             }
         }
-        else if (selectedAction == actionCustom)
+        else if (selectedAction == actionRename)
         {
-            // 处理自定义操作的逻辑
-            // 例如：根据用户需求执行相应的自定义操作
+            QString folderName = QInputDialog::getText(this, "Rename", "Enter new name:");
+            if (!folderName.isEmpty())
+            {
+                QString folderPath = currentPath + QDir::separator() + folderName;
+                
+                if (remotefilemanager_->renameRemoteFile(clickedPath.toStdString(),folderPath.toStdString(),cloginmanager_->GetToken()))
+                {
+                    LOG_Info("Folder renamed: ");
+                    show_serverdir(currentPath);
+                }
+                else
+                {
+                    LOG_Info("Failed to rename");
+                }
+            }
         }
 
     }
@@ -872,41 +891,41 @@ void ClientWindow::showsContextMenu(const QPoint &pos)
 
         if (selectedAction == actionCreateFile)
         {
-            // QString fileName = QInputDialog::getText(this, "Create File", "Enter file name:");
-            // if (!fileName.isEmpty())
-            // {
-            //     QString currentPath = ui->clientdir->text();
-            //     QString filePath = currentPath + QDir::separator() + fileName;
+            QString fileName = QInputDialog::getText(this, "Create File", "Enter file name:");
+            if (!fileName.isEmpty())
+            {
+                QString currentPath = ui->serverdir->text();
+                QString filePath = currentPath + QDir::separator() + fileName;
                 
-            //     if (filemanager_->CreateFile(filePath.toStdString()))
-            //     {
-            //         LOG_Info("File created: ");
-            //         show_clientdir(currentPath);
-            //     }
-            //     else
-            //     {
-            //         LOG_Info("Failed to create file: ");
-            //     }
-            // }
+                if (remotefilemanager_->createRemoteFileOrDirectory(filePath.toStdString(),cloginmanager_->GetToken(),false))
+                {
+                    LOG_Info("File created: ");
+                    show_serverdir(currentPath);
+                }
+                else
+                {
+                    LOG_Info("Failed to create file: ");
+                }
+            }
         }
         else if (selectedAction == actionCreateFolder)
         {
-            // QString folderName = QInputDialog::getText(this, "Create Folder", "Enter folder name:");
-            // if (!folderName.isEmpty())
-            // {
-            //     QString currentPath = ui->clientdir->text();
-            //     QString folderPath = currentPath + QDir::separator() + folderName;
+            QString folderName = QInputDialog::getText(this, "Create Folder", "Enter folder name:");
+            if (!folderName.isEmpty())
+            {
+                QString currentPath = ui->serverdir->text();
+                QString folderPath = currentPath + QDir::separator() + folderName;
                 
-            //     if (filemanager_->CreateDirectory(folderPath.toStdString()))
-            //     {
-            //         LOG_Info("Folder created: ");
-            //         show_clientdir(currentPath);
-            //     }
-            //     else
-            //     {
-            //         LOG_Info("Failed to create folder: ");
-            //     }
-            // }
+                if (remotefilemanager_->createRemoteFileOrDirectory(folderPath.toStdString(),cloginmanager_->GetToken(),true))
+                {
+                    LOG_Info("Folder created: ");
+                    show_serverdir(currentPath);
+                }
+                else
+                {
+                    LOG_Info("Failed to create folder: ");
+                }
+            }
         }
         else if (selectedAction == actionPaste)
         {

@@ -74,6 +74,16 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             FileTransmission().UploadChunkedFile(req,res,handler.dir);
             return true;  // or false, depending on the result
         };
+    }else if (handler.url == "/files/create") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileManageRequest(handler.dir).handleCreateFileOrDirectory(req, res);
+            return true;  // or false, depending on the result
+        };
+    }else if (handler.url == "/files/rename") {
+        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
+            FileManageRequest(handler.dir).handleRenameFile(req, res);
+            return true;  // or false, depending on the result
+        };
     }
     else{
         handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
@@ -93,16 +103,7 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
     //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
     //         return true;  // or false, depending on the result
     //     };
-    // }  else if (handler.url == "/files/create-directory") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
-    // } else if (handler.url == "/files/rename") {
-    //     return [](const httplib::Request& req, httplib::Response& res) {
-    //         Singleton<LoginManager>::getInstance().token_verification_middleware(req,res);
-    //         return true;  // or false, depending on the result
-    //     };
+
 
 
     // Default handler

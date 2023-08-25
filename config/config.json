@@ -57,14 +57,14 @@
       "dir": "/home/scutech"
     },
     {
-      "url": "/files/create-directory",
+      "url": "/files/create",
       "method": "POST",
-      "handler": "createDirectory",
+      "handler": "createFile",
       "dir": "/home/scutech"
     },
     {
       "url": "/files/rename",
-      "method": "PUT",
+      "method": "POST",
       "handler": "renameFile",
       "dir": "/home/scutech"
     },

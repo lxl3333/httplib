@@ -5,15 +5,74 @@
 RemoteFileManager::RemoteFileManager(std::shared_ptr<httplib::Client>& client)
     : client_(client) {}
 
-bool RemoteFileManager::createRemoteDirectory(const std::string &dirname)
+bool RemoteFileManager::createRemoteFileOrDirectory(const std::string &filename, std::string token, bool isDirectory)
 {
-    // Implementation for creating directory on server
+    std::string requestPath =  "/files/create" ;
+
+    httplib::Params params;
+    params.emplace("token", token);
+    params.emplace("name", filename); // Use "name" parameter for both files and directories
+    params.emplace("is_directory", isDirectory ? "true" : "false"); // Add an is_directory parameter
+
+    httplib::Headers headers = {
+        {"Content-Type", "application/x-www-form-urlencoded"}
+    };
+
+    // Make a POST request to the server
+    auto response = client_->Post(requestPath.c_str(), headers, params);
+
+    if (response && response->status == 200)
+    {
+        // Check the response content to determine if the creation was successful
+        if (response->body == "Created successfully")
+        {
+            return true;
+        }
+        else if (response->body == "Creation failed")
+        {
+            return false;
+        }
+        // Handle other response content as needed
+    }
+    
+    return false; // Return false if the request failed or the response was not as expected
 }
 
-bool RemoteFileManager::renameRemoteFile(const std::string &filename, const std::string &newname)
+
+
+bool RemoteFileManager::renameRemoteFile(const std::string &filename, const std::string &newname, std::string token)
 {
-    // Implementation for renaming file on server
+    std::string requestPath = "/files/rename";
+
+    httplib::Params params;
+    params.emplace("token", token);
+    params.emplace("oldname", filename); // Use "oldname" parameter for the original filename
+    params.emplace("newname", newname);
+
+    httplib::Headers headers = {
+        {"Content-Type", "application/x-www-form-urlencoded"}
+    };
+
+    // Make a POST request to the server
+    auto response = client_->Post(requestPath.c_str(), headers, params);
+
+    if (response && response->status == 200)
+    {
+        // Check the response content to determine if the renaming was successful
+        if (response->body == "Renamed successfully")
+        {
+            return true;
+        }
+        else if (response->body == "Renaming failed")
+        {
+            return false;
+        }
+        // Handle other response content as needed
+    }
+
+    return false; // Return false if the request failed or the response was not as expected
 }
+
 
 
 bool RemoteFileManager::moveRemoteFile(const std::string &filename, const std::string &newpath)

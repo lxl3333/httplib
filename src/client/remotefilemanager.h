@@ -11,8 +11,8 @@ class RemoteFileManager
 public:
     RemoteFileManager(std::shared_ptr<httplib::Client>& client);
 
-    bool createRemoteDirectory(const std::string &dirname);
-    bool renameRemoteFile(const std::string &filename, const std::string &newname);
+    bool createRemoteFileOrDirectory(const std::string &filename,std::string token,bool isDirectory);
+    bool renameRemoteFile(const std::string &filename, const std::string &newname,std::string token);
     bool moveRemoteFile(const std::string &filename, const std::string &newpath);
     bool copyRemoteFile(const std::string &filename, const std::string &targetpath);
     bool removeRemoteFile(const std::string &filename);
