@@ -341,662 +341,506 @@ void ClientWindow::onsFolderItemDoubleClicked(QListWidgetItem *item)
     // else Q_EMIT ui->listWidget_c->itemDoubleClicked(item);
 }
 
-
 void ClientWindow::showContextMenu(const QPoint &pos)
 {
     QListWidgetItem *item = ui->listWidget_c->itemAt(pos);
     QPoint listWidgetPos = ui->listWidget_c->mapFromGlobal(pos);
-    if (item)
+    QMenu contextMenu(this);
+
+    QAction *actionUpload = contextMenu.addAction("Upload");
+    QAction *actionOpen = contextMenu.addAction("Open");
+
+    // 在菜单中添加分隔线
+    contextMenu.addSeparator();
+
+    QAction *actionCut = contextMenu.addAction("Cut");
+    QAction *actionCopy = contextMenu.addAction("Copy");
+    QAction *actionPaste = contextMenu.addAction("Paste");
+    QAction *actionCreateFile = contextMenu.addAction("Create File");
+    QAction *actionCreateFolder = contextMenu.addAction("Create Folder");
+
+    // 在菜单中添加分隔线
+    contextMenu.addSeparator();
+
+    // 添加其他自定义功能
+    QAction *actionDelete = contextMenu.addAction("Delete");
+    QAction *actionRename = contextMenu.addAction("Rename");
+
+    auto setActionStateAndFont = [](QAction* action, bool enabled) {
+        action->setEnabled(enabled);
+
+        QFont font;
+        font.setItalic(!enabled); // 如果启用状态为 true，则设置字体为正常；如果启用状态为 false，则设置为斜体
+        action->setFont(font);
+    };
+
+    //调节显示粘贴键
+    bool hasCutOrCopiedFile = clipboardmanager_->hasCutFile() || clipboardmanager_->hasCopiedFile();
+
+    setActionStateAndFont(actionPaste, hasCutOrCopiedFile);
+
+    bool isItemValid = (item != nullptr);
+
+    setActionStateAndFont(actionUpload, isItemValid);
+    setActionStateAndFont(actionCopy, isItemValid);
+    setActionStateAndFont(actionCut, isItemValid);
+    setActionStateAndFont(actionDelete, isItemValid);
+    setActionStateAndFont(actionOpen, isItemValid);
+    setActionStateAndFont(actionRename, isItemValid);
+
+    QPalette pal = contextMenu.palette();
+    pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+    contextMenu.setPalette(pal);
+
+    // 显示上下文菜单并获取所选操作
+    QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
+
+
+    QString clickedItemText = item?item->text():"";
+
+    QString folderName = clickedItemText;
+    QString currentPath = ui->clientdir->text();
+
+    if(folderName=="..") return;
+
+    QString clickedPath = currentPath + QDir::separator() + folderName;
+
+    // Check if the clicked item is a folder
+    if(selectedAction == actionUpload)
     {
-        QMenu contextMenu(this);
-        QAction *actionUpload = contextMenu.addAction("Upload");
-        QAction *actionOpen = contextMenu.addAction("Open");
-        QAction *actionCut = contextMenu.addAction("Cut");
-        QAction *actionCopy = contextMenu.addAction("Copy");
-        QAction *actionPaste = contextMenu.addAction("Paste");
-        QAction *actionDelete = contextMenu.addAction("Delete");
-
-        // 在菜单中添加分隔线
-        contextMenu.addSeparator();
-
-        // 添加其他自定义功能
-        QAction *actionCustom = contextMenu.addAction("Custom Action");
-
-        //调节显示粘贴键
-        if (clipboardmanager_->hasCutFile() || clipboardmanager_->hasCopiedFile())
+        if(filemanager_->FileExists(clickedPath.toStdString()))
         {
-            actionPaste->setEnabled(true); // 可以粘贴
+            FileTransmissionManager(client_).UploadFixedFile(ui->serverdir->text().toStdString(),clickedPath.toStdString(),folderName.toStdString(),cloginmanager_->GetToken());
+            show_serverdir(ui->serverdir->text());
+        }
+    }
+    else if (selectedAction == actionOpen)
+    {
+        if (filemanager_->FileExists(clickedPath.toStdString()))
+        {
+            // 使用系统默认的文本编辑器打开文件
+            std::string command = "xdg-open " + clickedPath.toStdString(); // 对于 Linux/Unix 系统
+            int result = system(command.c_str());
+            if (result == 0)
+            {
+                std::cout << "File opened: " << clickedPath.toStdString() << std::endl;
+            }
+            else
+            {
+                std::cout << "Failed to open file: " << clickedPath.toStdString() << std::endl;
+            }
         }
         else
         {
-            actionPaste->setEnabled(false); // 不可粘贴（灰色）
-            QFont font = actionPaste->font();
-            font.setItalic(true); // 将字体设置为斜体
-            actionPaste->setFont(font);
+            std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
         }
-
-        QPalette pal = contextMenu.palette();
-        pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-        contextMenu.setPalette(pal);
-
-        // 显示上下文菜单并获取所选操作
-        QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
-
-
-        QString clickedItemText = item->text();
-
-        QString folderName = clickedItemText;
-        QString currentPath = ui->clientdir->text();
-
-        if(folderName=="..") return;
-
-        QString clickedPath = currentPath + QDir::separator() + folderName;
-
-        // Check if the clicked item is a folder
-        if(selectedAction == actionUpload)
-        {
-            if(filemanager_->FileExists(clickedPath.toStdString()))
-            {
-                FileTransmissionManager(client_).UploadChunkedFile(ui->serverdir->text().toStdString(),clickedPath.toStdString(),folderName.toStdString(),cloginmanager_->GetToken());
-                show_serverdir(ui->serverdir->text());
-            }
-        }
-        else if (selectedAction == actionOpen)
-        {
-            if (filemanager_->FileExists(clickedPath.toStdString()))
-            {
-                // 使用系统默认的文本编辑器打开文件
-                std::string command = "xdg-open " + clickedPath.toStdString(); // 对于 Linux/Unix 系统
-                int result = system(command.c_str());
-                if (result == 0)
-                {
-                    std::cout << "File opened: " << clickedPath.toStdString() << std::endl;
-                }
-                else
-                {
-                    std::cout << "Failed to open file: " << clickedPath.toStdString() << std::endl;
-                }
-            }
-            else
-            {
-                std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
-            }
-        }
-        else if (selectedAction == actionCut)
-        {
-            QString filePath = clickedPath; // 你需要指定要剪切的文件名
-            if (filemanager_->FileExists(filePath.toStdString()))
-            {
-                // 执行剪切文件的逻辑
-                // 假设你有一个剪贴板对象 clipboard
-                clipboardmanager_->cutFile(filePath.toStdString());
-            }
-            else
-            {
-                LOG_Info("File not found: "+ filePath.toStdString());
-            }
-        }
-        else if (selectedAction == actionCopy)
-        {
-            QString filePath = clickedPath; // 你需要指定要剪切的文件名
-            if (filemanager_->FileExists(filePath.toStdString()))
-            {
-                // 执行剪切文件的逻辑
-                // 假设你有一个剪贴板对象 clipboard
-                clipboardmanager_->copyFile(filePath.toStdString());
-            }
-            else
-            {
-                LOG_Info("File not found: "+ filePath.toStdString());
-            }
-        }
-        else if (selectedAction == actionPaste)
-        {
-            // Check if there is a cut or copied file in the clipboard manager
-            if (clipboardmanager_->isFileCut())
-            {
-                QString sourceFile = QString::fromStdString(clipboardmanager_->getCutFilePath());
-                QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
-                if (filemanager_->isDirectory(destinationDirectory.toStdString()))
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (filemanager_->MoveFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        clipboardmanager_->clearCutFile();
-                        LOG_Info("File cut and pasted successfully.");
-                        show_clientdir(currentPath);
-                    }
-                    else
-                    {
-                        LOG_Info("Failed to paste cut file.") ;
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory.") ;
-                }
-            }
-            else if (clipboardmanager_->isFileCopied())
-            {
-                QString sourceFile = QString::fromStdString(clipboardmanager_->getCopyFilePath());
-                QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
-                if (filemanager_->isDirectory(destinationDirectory.toStdString()))
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (filemanager_->CopyFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        clipboardmanager_->clearCopyFile();
-                        LOG_Info("File copied and pasted successfully.");
-                        show_clientdir(currentPath);
-                    }
-                    else
-                    {
-                       LOG_Info ("Failed to paste copied file.");
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory." );
-                }
-            }
-            else
-            {
-                LOG_Info( "No file to paste in clipboard.");
-            }
-        }
-
-        else if (selectedAction == actionDelete)
-        {
-            if (filemanager_->FileExists(clickedPath.toStdString()))
-            {
-                // 执行删除文件的逻辑
-                if (filemanager_->RemoveFile(clickedPath.toStdString()))
-                {
-                    std::cout << "File deleted: " << clickedPath.toStdString() << std::endl;
-                    show_clientdir(currentPath);
-                }
-                else
-                {
-                    std::cout << "Failed to delete file: " << clickedPath.toStdString() << std::endl;
-                }
-            }
-            else
-            {
-                std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
-            }
-        }
-        else if (selectedAction == actionCustom)
-        {
-            // 处理自定义操作的逻辑
-            // 例如：根据用户需求执行相应的自定义操作
-        }
-
     }
-    else
+    else if (selectedAction == actionCut)
     {
-        QMenu contextMenu(this);
-        QAction *actionCreateFile = contextMenu.addAction("Create File");
-        QAction *actionCreateFolder = contextMenu.addAction("Create Folder");
-        QAction *actionPaste = contextMenu.addAction("Paste");
-
-        //调节显示粘贴键
-        if (clipboardmanager_->hasCutFile() || clipboardmanager_->hasCopiedFile())
+        QString filePath = clickedPath; // 你需要指定要剪切的文件名
+        if (filemanager_->FileExists(filePath.toStdString()))
         {
-            actionPaste->setEnabled(true); // 可以粘贴
+            // 执行剪切文件的逻辑
+            // 假设你有一个剪贴板对象 clipboard
+            clipboardmanager_->cutFile(filePath.toStdString());
         }
         else
         {
-            actionPaste->setEnabled(false); // 不可粘贴（灰色）
-            QFont font = actionPaste->font();
-            font.setItalic(true); // 将字体设置为斜体
-            actionPaste->setFont(font);
+            LOG_Info("File not found: "+ filePath.toStdString());
         }
-        
-        QPalette pal = contextMenu.palette();
-        pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-        contextMenu.setPalette(pal);
-
-        QAction *selectedAction = contextMenu.exec(ui->listWidget_c->mapToGlobal(pos));
-
-        if (selectedAction == actionCreateFile)
+    }
+    else if (selectedAction == actionCopy)
+    {
+        QString filePath = clickedPath; // 你需要指定要剪切的文件名
+        if (filemanager_->FileExists(filePath.toStdString()))
         {
-            QString fileName = QInputDialog::getText(this, "Create File", "Enter file name:");
-            if (!fileName.isEmpty())
+            // 执行剪切文件的逻辑
+            // 假设你有一个剪贴板对象 clipboard
+            clipboardmanager_->copyFile(filePath.toStdString());
+        }
+        else
+        {
+            LOG_Info("File not found: "+ filePath.toStdString());
+        }
+    }
+    else if (selectedAction == actionPaste)
+    {
+        // Check if there is a cut or copied file in the clipboard manager
+        if (clipboardmanager_->isFileCut())
+        {
+            QString sourceFile = QString::fromStdString(clipboardmanager_->getCutFilePath());
+            QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
+            if (filemanager_->isDirectory(destinationDirectory.toStdString()))
             {
-                QString currentPath = ui->clientdir->text();
-                QString filePath = currentPath + QDir::separator() + fileName;
-                
-                if (filemanager_->CreateFile(filePath.toStdString()))
+                QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
+                if (filemanager_->MoveFile(sourceFile.toStdString(), destinationPath.toStdString()))
                 {
-                    LOG_Info("File created: ");
+                    clipboardmanager_->clearCutFile();
+                    LOG_Info("File cut and pasted successfully.");
                     show_clientdir(currentPath);
                 }
                 else
                 {
-                    LOG_Info("Failed to create file: ");
-                }
-            }
-        }
-        else if (selectedAction == actionCreateFolder)
-        {
-            QString folderName = QInputDialog::getText(this, "Create Folder", "Enter folder name:");
-            if (!folderName.isEmpty())
-            {
-                QString currentPath = ui->clientdir->text();
-                QString folderPath = currentPath + QDir::separator() + folderName;
-                
-                if (filemanager_->CreateDirectory(folderPath.toStdString()))
-                {
-                    LOG_Info("Folder created: ");
-                    show_clientdir(currentPath);
-                }
-                else
-                {
-                    LOG_Info("Failed to create folder: ");
-                }
-            }
-        }
-        else if (selectedAction == actionPaste)
-        {
-            // Check if there is a cut or copied file in the clipboard manager
-            if (clipboardmanager_->isFileCut())
-            {
-                QString sourceFile = QString::fromStdString(clipboardmanager_->getCutFilePath());
-                QString destinationDirectory=ui->clientdir->text(); // 你需要指定粘贴目标目录
-                if (filemanager_->isDirectory(destinationDirectory.toStdString()))
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (filemanager_->MoveFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        clipboardmanager_->clearCutFile();
-                        LOG_Info("File cut and pasted successfully.");
-                        show_clientdir(ui->clientdir->text());
-                    }
-                    else
-                    {
-                        LOG_Info("Failed to paste cut file.") ;
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory.") ;
-                }
-            }
-            else if (clipboardmanager_->isFileCopied())
-            {
-                QString sourceFile = QString::fromStdString(clipboardmanager_->getCopyFilePath());
-                QString destinationDirectory=ui->clientdir->text(); // 你需要指定粘贴目标目录
-                if (filemanager_->isDirectory(destinationDirectory.toStdString()))
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (filemanager_->CopyFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        clipboardmanager_->clearCopyFile();
-                        LOG_Info("File copied and pasted successfully.");
-                        show_clientdir(ui->clientdir->text());
-                    }
-                    else
-                    {
-                       LOG_Info ("Failed to paste copied file.");
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory." );
+                    LOG_Info("Failed to paste cut file.") ;
                 }
             }
             else
             {
-                LOG_Info( "No file to paste in clipboard.");
+                LOG_Info( "Invalid destination directory.") ;
             }
         }
-
+        else if (clipboardmanager_->isFileCopied())
+        {
+            QString sourceFile = QString::fromStdString(clipboardmanager_->getCopyFilePath());
+            QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
+            if (filemanager_->isDirectory(destinationDirectory.toStdString()))
+            {
+                QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
+                if (filemanager_->CopyFile(sourceFile.toStdString(), destinationPath.toStdString()))
+                {
+                    clipboardmanager_->clearCopyFile();
+                    LOG_Info("File copied and pasted successfully.");
+                    show_clientdir(currentPath);
+                }
+                else
+                {
+                    LOG_Info ("Failed to paste copied file.");
+                }
+            }
+            else
+            {
+                LOG_Info( "Invalid destination directory." );
+            }
+        }
+        else
+        {
+            LOG_Info( "No file to paste in clipboard.");
+        }
     }
-
+    else if (selectedAction == actionDelete)
+    {
+        if (filemanager_->FileExists(clickedPath.toStdString()))
+        {
+            // 执行删除文件的逻辑
+            if (filemanager_->RemoveFile(clickedPath.toStdString()))
+            {
+                std::cout << "File deleted: " << clickedPath.toStdString() << std::endl;
+                show_clientdir(currentPath);
+            }
+            else
+            {
+                std::cout << "Failed to delete file: " << clickedPath.toStdString() << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
+        }
+    }else if (selectedAction == actionCreateFile)
+    {
+        QString fileName = QInputDialog::getText(this, "Create File", "Enter file name:");
+        if (!fileName.isEmpty())
+        {
+            QString currentPath = ui->clientdir->text();
+            QString filePath = currentPath + QDir::separator() + fileName;
+            
+            if (filemanager_->CreateFile(filePath.toStdString()))
+            {
+                LOG_Info("File created: ");
+                show_clientdir(currentPath);
+            }
+            else
+            {
+                LOG_Info("Failed to create file: ");
+            }
+        }
+    }
+    else if (selectedAction == actionCreateFolder)
+    {
+        QString folderName = QInputDialog::getText(this, "Create Folder", "Enter folder name:");
+        if (!folderName.isEmpty())
+        {
+            QString currentPath = ui->clientdir->text();
+            QString folderPath = currentPath + QDir::separator() + folderName;
+            
+            if (filemanager_->CreateDirectory(folderPath.toStdString()))
+            {
+                LOG_Info("Folder created: ");
+                show_clientdir(currentPath);
+            }
+            else
+            {
+                LOG_Info("Failed to create folder: ");
+            }
+        }
+    }
+    else if(selectedAction == actionRename)
+    {
+        QString folderName = QInputDialog::getText(this, "Rename", "Enter new name:");
+        if (!folderName.isEmpty())
+        {
+            QString folderPath = currentPath + QDir::separator() + folderName;
+            
+            if (filemanager_->MoveFile(clickedPath.toStdString(),folderPath.toStdString()))
+            {
+                LOG_Info("Folder renamed: ");
+                show_clientdir(currentPath);
+            }
+            else
+            {
+                LOG_Info("Failed to rename");
+            }
+        }
+    }
 }
 
 void ClientWindow::showsContextMenu(const QPoint &pos)
 {
     QListWidgetItem *item = ui->listWidget_s->itemAt(pos);
     QPoint listWidgetPos = ui->listWidget_s->mapFromGlobal(pos);
-    if (item)
+
+    QMenu contextMenu(this);
+    QAction *actionOpen = contextMenu.addAction("Open");
+
+    // 在菜单中添加分隔线
+    contextMenu.addSeparator();
+
+    QAction *actionCut = contextMenu.addAction("Cut");
+    QAction *actionCopy = contextMenu.addAction("Copy");
+    QAction *actionPaste = contextMenu.addAction("Paste");
+    QAction *actionCreateFile = contextMenu.addAction("Create File");
+    QAction *actionCreateFolder = contextMenu.addAction("Create Folder");
+
+    // 在菜单中添加分隔线
+    contextMenu.addSeparator();
+
+    // 添加其他自定义功能
+    QAction *actionDelete = contextMenu.addAction("Delete");
+    QAction *actionRename = contextMenu.addAction("Rename");
+
+    auto setActionStateAndFont = [](QAction* action, bool enabled) {
+        action->setEnabled(enabled);
+
+        QFont font;
+        font.setItalic(!enabled); // 如果启用状态为 true，则设置字体为正常；如果启用状态为 false，则设置为斜体
+        action->setFont(font);
+    };
+
+    //调节显示粘贴键
+    bool hasCutOrCopiedFile = serverclipboardmanager_->hasCutFile() || serverclipboardmanager_->hasCopiedFile();
+
+    setActionStateAndFont(actionPaste, hasCutOrCopiedFile);
+
+    bool isItemValid = (item != nullptr);
+
+    setActionStateAndFont(actionCopy, isItemValid);
+    setActionStateAndFont(actionCut, isItemValid);
+    setActionStateAndFont(actionDelete, isItemValid);
+    setActionStateAndFont(actionOpen, isItemValid);
+    setActionStateAndFont(actionRename, isItemValid);
+
+
+
+    QPalette pal = contextMenu.palette();
+    pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+    contextMenu.setPalette(pal);
+
+    // 显示上下文菜单并获取所选操作
+    QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
+
+
+    QString clickedItemText =item?item->text():"";
+
+    QString folderName = clickedItemText;
+    QString currentPath = ui->serverdir->text();
+
+    if(folderName=="..") return;
+
+    QString clickedPath = currentPath + QDir::separator() + folderName;
+
+    // Check if the clicked item is a folder
+    if (selectedAction == actionOpen)
     {
-        QMenu contextMenu(this);
-        QAction *actionOpen = contextMenu.addAction("Open");
-
-        // 在菜单中添加分隔线
-        contextMenu.addSeparator();
-
-        QAction *actionCut = contextMenu.addAction("Cut");
-        QAction *actionCopy = contextMenu.addAction("Copy");
-        QAction *actionPaste = contextMenu.addAction("Paste");
-        QAction *actionCreateFile = contextMenu.addAction("Create File");
-        QAction *actionCreateFolder = contextMenu.addAction("Create Folder");
-
-        // 在菜单中添加分隔线
-        contextMenu.addSeparator();
-
-        // 添加其他自定义功能
-        QAction *actionDelete = contextMenu.addAction("Delete");
-        QAction *actionRename = contextMenu.addAction("Rename");
-
-        //调节显示粘贴键
-        if (serverclipboardmanager_->hasCutFile() || serverclipboardmanager_->hasCopiedFile())
+        // if (filemanager_->FileExists(clickedPath.toStdString()))
+        // {
+        //     // 使用系统默认的文本编辑器打开文件
+        //     std::string command = "xdg-open " + clickedPath.toStdString(); // 对于 Linux/Unix 系统
+        //     int result = system(command.c_str());
+        //     if (result == 0)
+        //     {
+        //         std::cout << "File opened: " << clickedPath.toStdString() << std::endl;
+        //     }
+        //     else
+        //     {
+        //         std::cout << "Failed to open file: " << clickedPath.toStdString() << std::endl;
+        //     }
+        // }
+        // else
+        // {
+        //     std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
+        // }
+    }
+    else if (selectedAction == actionCut)
+    {
+        QString filePath = clickedPath; // 你需要指定要剪切的文件名
+        if (remotefilemanager_->checkFileExist(filePath.toStdString(),cloginmanager_->GetToken()))
         {
-            actionPaste->setEnabled(true); // 可以粘贴
+            // 执行剪切文件的逻辑
+            // 假设你有一个剪贴板对象 clipboard
+            serverclipboardmanager_->cutFile(filePath.toStdString());
         }
         else
         {
-            actionPaste->setEnabled(false); // 不可粘贴（灰色）
-            QFont font = actionPaste->font();
-            font.setItalic(true); // 将字体设置为斜体
-            actionPaste->setFont(font);
+            LOG_Info("File not found: "+ filePath.toStdString());
         }
-
-        QPalette pal = contextMenu.palette();
-        pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-        contextMenu.setPalette(pal);
-
-        // 显示上下文菜单并获取所选操作
-        QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
-
-
-        QString clickedItemText = item->text();
-
-        QString folderName = clickedItemText;
-        QString currentPath = ui->serverdir->text();
-
-        if(folderName=="..") return;
-
-        QString clickedPath = currentPath + QDir::separator() + folderName;
-
-        // Check if the clicked item is a folder
-        if (selectedAction == actionOpen)
+    }
+    else if (selectedAction == actionCopy)
+    {
+        QString filePath = clickedPath; // 你需要指定要剪切的文件名
+        if (remotefilemanager_->checkFileExist(filePath.toStdString(),cloginmanager_->GetToken()))
         {
-            // if (filemanager_->FileExists(clickedPath.toStdString()))
-            // {
-            //     // 使用系统默认的文本编辑器打开文件
-            //     std::string command = "xdg-open " + clickedPath.toStdString(); // 对于 Linux/Unix 系统
-            //     int result = system(command.c_str());
-            //     if (result == 0)
-            //     {
-            //         std::cout << "File opened: " << clickedPath.toStdString() << std::endl;
-            //     }
-            //     else
-            //     {
-            //         std::cout << "Failed to open file: " << clickedPath.toStdString() << std::endl;
-            //     }
-            // }
-            // else
-            // {
-            //     std::cout << "File not found: " << clickedPath.toStdString() << std::endl;
-            // }
+            // 执行剪切文件的逻辑
+            // 假设你有一个剪贴板对象 clipboard
+            serverclipboardmanager_->copyFile(filePath.toStdString());
         }
-        else if (selectedAction == actionCut)
+        else
         {
-            QString filePath = clickedPath; // 你需要指定要剪切的文件名
-            if (remotefilemanager_->checkFileExist(filePath.toStdString(),cloginmanager_->GetToken()))
-            {
-                // 执行剪切文件的逻辑
-                // 假设你有一个剪贴板对象 clipboard
-                serverclipboardmanager_->cutFile(filePath.toStdString());
-            }
-            else
-            {
-                LOG_Info("File not found: "+ filePath.toStdString());
-            }
+            LOG_Info("File not found: "+ filePath.toStdString());
         }
-        else if (selectedAction == actionCopy)
-        {
-            QString filePath = clickedPath; // 你需要指定要剪切的文件名
-            if (remotefilemanager_->checkFileExist(filePath.toStdString(),cloginmanager_->GetToken()))
+    }
+    else if (selectedAction == actionPaste)
+    {
+        //Check if there is a cut or copied file in the clipboard manager
+        auto checkisDirectory =[](std::vector<std::pair<std::string, bool>>&remotefiles,std::string  folderName)->bool{
+            for (auto &item : remotefiles)
             {
-                // 执行剪切文件的逻辑
-                // 假设你有一个剪贴板对象 clipboard
-                serverclipboardmanager_->copyFile(filePath.toStdString());
-            }
-            else
-            {
-                LOG_Info("File not found: "+ filePath.toStdString());
-            }
-        }
-        else if (selectedAction == actionPaste)
-        {
-            //Check if there is a cut or copied file in the clipboard manager
-            auto checkisDirectory =[](std::vector<std::pair<std::string, bool>>&remotefiles,std::string  folderName)->bool{
-                for (auto &item : remotefiles)
+                const std::string &fileName = item.first;
+                bool isDirectory = item.second;
+                if (fileName == folderName&& isDirectory)
                 {
-                    const std::string &fileName = item.first;
-                    bool isDirectory = item.second;
-                    if (fileName == folderName&& isDirectory)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                return false;
-            };
-            LOG_Info("heck if there is a cut or copied file in the clipboard manager");
-            if (serverclipboardmanager_->isFileCut())
+            }
+            return false;
+        };
+        LOG_Info("heck if there is a cut or copied file in the clipboard manager");
+        if (serverclipboardmanager_->isFileCut())
+        {
+            QString sourceFile = QString::fromStdString(serverclipboardmanager_->getCutFilePath());
+            QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
+            if (checkisDirectory(remotefiles,destinationDirectory.toStdString()))
             {
-                QString sourceFile = QString::fromStdString(serverclipboardmanager_->getCutFilePath());
-                QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
-                if (checkisDirectory(remotefiles,destinationDirectory.toStdString()))
+                QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
+                if (remotefilemanager_->moveRemoteFile(sourceFile.toStdString(), destinationPath.toStdString()))
                 {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (remotefilemanager_->moveRemoteFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        serverclipboardmanager_->clearCutFile();
-                        LOG_Info("File cut and pasted successfully.");
-                        show_serverdir(currentPath);
-                    }
-                    else
-                    {
-                        LOG_Info("Failed to paste cut file.") ;
-                    }
+                    serverclipboardmanager_->clearCutFile();
+                    LOG_Info("File cut and pasted successfully.");
+                    show_serverdir(currentPath);
                 }
                 else
                 {
-                    LOG_Info( "Invalid destination directory.") ;
-                }
-            }
-            else if (serverclipboardmanager_->isFileCopied())
-            {
-                QString sourceFile = QString::fromStdString(serverclipboardmanager_->getCopyFilePath());
-                QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
-                if (checkisDirectory(remotefiles,destinationDirectory.toStdString()))
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (remotefilemanager_->copyRemoteFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        serverclipboardmanager_->clearCopyFile();
-                        LOG_Info("File copied and pasted successfully.");
-                        show_serverdir(currentPath);
-                    }
-                    else
-                    {
-                       LOG_Info ("Failed to paste copied file.");
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory." );
+                    LOG_Info("Failed to paste cut file.") ;
                 }
             }
             else
             {
-                LOG_Info( "No file to paste in clipboard.");
+                LOG_Info( "Invalid destination directory.") ;
             }
         }
-        else if (selectedAction == actionDelete)
+        else if (serverclipboardmanager_->isFileCopied())
         {
-            if (remotefilemanager_->removeRemoteFile(clickedPath.toStdString()))
+            QString sourceFile = QString::fromStdString(serverclipboardmanager_->getCopyFilePath());
+            QString destinationDirectory=currentPath; // 你需要指定粘贴目标目录
+            if (checkisDirectory(remotefiles,destinationDirectory.toStdString()))
             {
-                LOG_Info( "File deleted: " + clickedPath.toStdString());
+                QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
+                if (remotefilemanager_->copyRemoteFile(sourceFile.toStdString(), destinationPath.toStdString()))
+                {
+                    serverclipboardmanager_->clearCopyFile();
+                    LOG_Info("File copied and pasted successfully.");
+                    show_serverdir(currentPath);
+                }
+                else
+                {
+                    LOG_Info ("Failed to paste copied file.");
+                }
+            }
+            else
+            {
+                LOG_Info( "Invalid destination directory." );
+            }
+        }
+        else
+        {
+            LOG_Info( "No file to paste in clipboard.");
+        }
+    }
+    else if (selectedAction == actionDelete)
+    {
+        if (remotefilemanager_->removeRemoteFile(clickedPath.toStdString(),cloginmanager_->GetToken()))
+        {
+            LOG_Info( "File deleted: " + clickedPath.toStdString());
+            show_serverdir(currentPath);
+        }
+        else
+        {
+            LOG_Info( "Failed to delete file: " + clickedPath.toStdString());
+        }
+    }
+    else if (selectedAction == actionRename)
+    {
+        QString folderName = QInputDialog::getText(this, "Rename", "Enter new name:");
+        if (!folderName.isEmpty())
+        {
+            QString folderPath = currentPath + QDir::separator() + folderName;
+            
+            if (remotefilemanager_->renameRemoteFile(clickedPath.toStdString(),folderPath.toStdString(),cloginmanager_->GetToken()))
+            {
+                LOG_Info("Folder renamed: ");
                 show_serverdir(currentPath);
             }
             else
             {
-                LOG_Info( "Failed to delete file: " + clickedPath.toStdString());
+                LOG_Info("Failed to rename");
             }
         }
-        else if (selectedAction == actionRename)
-        {
-            QString folderName = QInputDialog::getText(this, "Rename", "Enter new name:");
-            if (!folderName.isEmpty())
-            {
-                QString folderPath = currentPath + QDir::separator() + folderName;
-                
-                if (remotefilemanager_->renameRemoteFile(clickedPath.toStdString(),folderPath.toStdString(),cloginmanager_->GetToken()))
-                {
-                    LOG_Info("Folder renamed: ");
-                    show_serverdir(currentPath);
-                }
-                else
-                {
-                    LOG_Info("Failed to rename");
-                }
-            }
-        }
-
-    }
-    else
+    }else if (selectedAction == actionCreateFile)
     {
-        QMenu contextMenu(this);
-        QAction *actionCreateFile = contextMenu.addAction("Create File");
-        QAction *actionCreateFolder = contextMenu.addAction("Create Folder");
-        QAction *actionPaste = contextMenu.addAction("Paste");
-
-        //调节显示粘贴键
-        if (serverclipboardmanager_->hasCutFile() || serverclipboardmanager_->hasCopiedFile())
+        QString fileName = QInputDialog::getText(this, "Create File", "Enter file name:");
+        if (!fileName.isEmpty())
         {
-            actionPaste->setEnabled(true); // 可以粘贴
-        }
-        else
-        {
-            actionPaste->setEnabled(false); // 不可粘贴（灰色）
-            QFont font = actionPaste->font();
-            font.setItalic(true); // 将字体设置为斜体
-            actionPaste->setFont(font);
-        }
-        
-        QPalette pal = contextMenu.palette();
-        pal.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-        contextMenu.setPalette(pal);
-
-        QAction *selectedAction = contextMenu.exec(ui->listWidget_s->mapToGlobal(pos));
-
-
-
-        if (selectedAction == actionCreateFile)
-        {
-            QString fileName = QInputDialog::getText(this, "Create File", "Enter file name:");
-            if (!fileName.isEmpty())
+            QString filePath = currentPath + QDir::separator() + fileName;
+            
+            if (remotefilemanager_->createRemoteFileOrDirectory(filePath.toStdString(),cloginmanager_->GetToken(),false))
             {
-                QString currentPath = ui->serverdir->text();
-                QString filePath = currentPath + QDir::separator() + fileName;
-                
-                if (remotefilemanager_->createRemoteFileOrDirectory(filePath.toStdString(),cloginmanager_->GetToken(),false))
-                {
-                    LOG_Info("File created: ");
-                    show_serverdir(currentPath);
-                }
-                else
-                {
-                    LOG_Info("Failed to create file: ");
-                }
-            }
-        }
-        else if (selectedAction == actionCreateFolder)
-        {
-            QString folderName = QInputDialog::getText(this, "Create Folder", "Enter folder name:");
-            if (!folderName.isEmpty())
-            {
-                QString currentPath = ui->serverdir->text();
-                QString folderPath = currentPath + QDir::separator() + folderName;
-                
-                if (remotefilemanager_->createRemoteFileOrDirectory(folderPath.toStdString(),cloginmanager_->GetToken(),true))
-                {
-                    LOG_Info("Folder created: ");
-                    show_serverdir(currentPath);
-                }
-                else
-                {
-                    LOG_Info("Failed to create folder: ");
-                }
-            }
-        }
-        else if (selectedAction == actionPaste)
-        {
-            //Check if there is a cut or copied file in the clipboard manager
-            auto checkisDirectory =[](std::vector<std::pair<std::string, bool>>&remotefiles,std::string  folderName)->bool{
-                for (auto &item : remotefiles)
-                {
-                    const std::string &fileName = item.first;
-                    bool isDirectory = item.second;
-                    if (fileName == folderName&& isDirectory)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            };
-            LOG_Info("heck if there is a cut or copied file in the clipboard manager");
-            if (serverclipboardmanager_->isFileCut())
-            {
-                QString sourceFile = QString::fromStdString(serverclipboardmanager_->getCutFilePath());
-                QString destinationDirectory=ui->serverdir->text(); // 你需要指定粘贴目标目录
-                if (true)
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (remotefilemanager_->moveRemoteFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        serverclipboardmanager_->clearCutFile();
-                        LOG_Info("File cut and pasted successfully.");
-                        show_serverdir(ui->serverdir->text());
-                    }
-                    else
-                    {
-                        LOG_Info("Failed to paste cut file.") ;
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory.") ;
-                }
-            }
-            else if (serverclipboardmanager_->isFileCopied())
-            {
-                QString sourceFile = QString::fromStdString(serverclipboardmanager_->getCopyFilePath());
-                QString destinationDirectory=ui->serverdir->text(); // 你需要指定粘贴目标目录
-                if (true)
-                {
-                    QString destinationPath = destinationDirectory + QDir::separator() + QFileInfo(sourceFile).fileName();
-                    if (remotefilemanager_->copyRemoteFile(sourceFile.toStdString(), destinationPath.toStdString()))
-                    {
-                        serverclipboardmanager_->clearCopyFile();
-                        LOG_Info("File copied and pasted successfully.");
-                        show_serverdir(ui->serverdir->text());
-                    }
-                    else
-                    {
-                       LOG_Info ("Failed to paste copied file.");
-                    }
-                }
-                else
-                {
-                    LOG_Info( "Invalid destination directory." );
-                }
+                LOG_Info("File created: ");
+                show_serverdir(currentPath);
             }
             else
             {
-                LOG_Info( "No file to paste in clipboard.");
+                LOG_Info("Failed to create file: ");
             }
         }
-
+    }
+    else if (selectedAction == actionCreateFolder)
+    {
+        QString folderName = QInputDialog::getText(this, "Create Folder", "Enter folder name:");
+        if (!folderName.isEmpty())
+        {
+            QString folderPath = currentPath + QDir::separator() + folderName;
+            
+            if (remotefilemanager_->createRemoteFileOrDirectory(folderPath.toStdString(),cloginmanager_->GetToken(),true))
+            {
+                LOG_Info("Folder created: ");
+                show_serverdir(currentPath);
+            }
+            else
+            {
+                LOG_Info("Failed to create folder: ");
+            }
+        }
     }
 
 }
-
-

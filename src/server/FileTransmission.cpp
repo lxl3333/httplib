@@ -144,22 +144,18 @@ bool FileTransmission::UploadChunkedFile(const httplib::Request& req, httplib::R
     return true;
 }
 
-
-bool FileTransmission::ReceiveDirectory(httplib::Request& req, httplib::Response& res) {
-  std::string dir_path = req.get_param_value("dir_path");
-
-  if (dir_path.empty()) {
-    res.status = 400;
-    res.set_content("Directory path not provided", "text/plain");
-    return false;
-  }
-
-  // Implementation to receive and save directory contents
-  // ...
-
-  res.set_content("Directory received", "text/plain");
-  return true;
+bool FileTransmission::Upload(const httplib::Request& req, httplib::Response& res, std::string rootPath) {
+    if (req.has_header("Content-Length")) {
+        // Content-Length header is set, indicating a fixed size file upload
+        return UploadFixedFile(req, res, rootPath);
+    } else {
+        // Content-Length header is not set, indicating a chunked file upload
+        return UploadChunkedFile(req, res, rootPath);
+    }
 }
+
+
+
 
 std::string FileTransmission::ComputeHash(const std::string& path) {
   std::ifstream file(path, std::ios::binary);

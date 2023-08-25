@@ -27,27 +27,15 @@
       "dir": "/home/scutech"
     },
     {
-      "url": "/files/upload/FixedFile",
+      "url": "/files/upload",
       "method": "POST",
-      "handler": "uploadFixedFile",
+      "handler": "uploadFile",
       "dir": "/home/scutech"
     },
     {
-      "url": "/files/upload/ChunkedFile",
-      "method": "POST",
-      "handler": "uploadChunkedFile",
-      "dir": "/home/scutech"
-    },
-    {
-      "url": "/files/download/FixedFile",
+      "url": "/files/download",
       "method": "GET",
-      "handler": "downloadFixedFile",
-      "dir": "/home/scutech"
-    },
-    {
-      "url": "/files/download/ChunkedFile",
-      "method": "GET",
-      "handler": "downloadChunkedFile",
+      "handler": "downloadFile",
       "dir": "/home/scutech"
     },
     {
@@ -84,11 +72,6 @@
       "url": "/auth/login",
       "method": "POST",
       "handler": "login"
-    },
-    {
-      "url": "/auth/verify_token",
-      "method": "POST",
-      "handler": "verify_token"
     },
     {
       "url": "/auth/logout",

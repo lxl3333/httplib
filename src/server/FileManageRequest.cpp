@@ -3,6 +3,9 @@
 #include <jsoncpp/json/json.h>
 
 #include "../base/Logger.h"
+#include "../base/Singleton.h"
+#include "LoginManager.h"
+
 
 FileManageRequest::FileManageRequest(const std::string &rootPath) : fileManager_(rootPath) {}
 
@@ -97,6 +100,12 @@ bool FileManageRequest::handleCopyFile(const httplib::Request &req, httplib::Res
 
 bool FileManageRequest::handleRemoveFile(const httplib::Request &req, httplib::Response &res)
 {
+
+
+    std::string token = req.get_param_value("token"); // Assuming you pass the remote path as a query parameter
+
+    if(!Singleton<LoginManager>::getInstance().token_verification_middleware(req, res)) return false;
+
     Json::CharReaderBuilder reader;
     Json::Value root;
 
@@ -147,6 +156,9 @@ bool FileManageRequest::handleListFiles(const httplib::Request &req, httplib::Re
 {
 
     std::string remotePath = req.get_param_value("path"); // Assuming you pass the remote path as a query parameter
+    std::string token = req.get_param_value("token"); // Assuming you pass the remote path as a query parameter
+
+    if(!Singleton<LoginManager>::getInstance().token_verification_middleware(req, res)) return false;
 
     LOG_Info("handleListFiles:"+remotePath);
     // Construct the full path using the rootPath and remotePath

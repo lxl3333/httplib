@@ -9,7 +9,7 @@ FileTransmissionManager::FileTransmissionManager(std::shared_ptr<httplib::Client
 
 bool FileTransmissionManager::UploadFixedFile(const std::string& remotePath, const std::string& localPath,const std::string fileName, std::string token) {
     LOG_Info("UploadFixedFile");
-    std::string url = "/files/upload/FixedFile";
+    std::string url = "/files/upload";
 
     httplib::Headers headers = httplib::Headers{
         {"token", token},
@@ -57,7 +57,7 @@ bool FileTransmissionManager::UploadFixedFile(const std::string& remotePath, con
 
 bool FileTransmissionManager::UploadChunkedFile(const std::string& remotePath, const std::string& localPath, const std::string& fileName, std::string token) {
     LOG_Info("UploadChunkedFile");
-    std::string url = "/files/upload/ChunkedFile";
+    std::string url = "/files/upload";
 
     httplib::Headers headers = httplib::Headers{
         {"token", token},

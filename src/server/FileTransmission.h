@@ -14,7 +14,8 @@ public:
   bool Sendc(httplib::Request &req,httplib::Response &res);
   bool UploadFixedFile(const httplib::Request &req,httplib::Response &res,std::string rootPath);
   bool UploadChunkedFile(const httplib::Request &req,httplib::Response &res,std::string rootPath);
-  bool ReceiveDirectory(httplib::Request &req,httplib::Response &res);
+
+  bool Upload(const httplib::Request &req,httplib::Response &res,std::string rootPath);
 
 //private:
   std::string ComputeHash(const std::string& path);

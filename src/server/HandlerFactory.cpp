@@ -26,13 +26,6 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             return;
         };
     }
-    else if (handler.url == "/auth/verify_token")
-    {
-        handler_info.handler_function = [](const httplib::Request &req, httplib::Response &res)
-        {
-            Singleton<LoginManager>::getInstance().token_verification_middleware(req, res);
-        };
-    }
     else if (handler.url == "/files/ListFiles")
     {
         handler_info.handler_function = [handler](const httplib::Request &req, httplib::Response &res)
@@ -64,14 +57,9 @@ HandlerInfo HandlerFactory::createHandler(const Config::Handler &handler)
             return true;  // or false, depending on the result
         };
     }
-    else if (handler.url == "/files/upload/FixedFile") {
+    else if (handler.url == "/files/upload") {
         handler_info.handler_function =  [handler](const httplib::Request& req, httplib::Response& res) {
-            FileTransmission().UploadFixedFile(req,res,handler.dir);
-            return true;  // or false, depending on the result
-        };
-    }else if (handler.url == "/files/upload/ChunkedFile") {
-        handler_info.handler_function = [handler](const httplib::Request& req, httplib::Response& res) {
-            FileTransmission().UploadChunkedFile(req,res,handler.dir);
+            FileTransmission().Upload(req,res,handler.dir);
             return true;  // or false, depending on the result
         };
     }else if (handler.url == "/files/create") {

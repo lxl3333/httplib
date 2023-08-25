@@ -140,11 +140,12 @@ bool RemoteFileManager::copyRemoteFile(const std::string &filename, const std::s
 }
 
 
-bool RemoteFileManager::removeRemoteFile(const std::string& filename) {
+bool RemoteFileManager::removeRemoteFile(const std::string& filename,std::string token) {
     std::string url = "/files/delete"; // Replace with the actual API endpoint
 
     httplib::Headers headers = {
-        {"Content-Type", "application/json"}
+        {"Content-Type", "application/json"},
+        {"token",token}
     };
 
     Json::Value requestData;
